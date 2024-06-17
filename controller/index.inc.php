@@ -1,9 +1,15 @@
 <?php
 
-namespace TFPHP\controller;
+namespace tfphp\controller;
 
-use TFPHP\framework\system\TFPage;
+use tfphp\framework\system\tfpage;
 
-class index extends TFPage {
-
+class index extends tfpage {
+    protected function onLoad(){
+        $this->view->setVar("title", "this is a page");
+        $this->view->setVar("page", [
+            "h1"=>"this is a page",
+            "p"=>"it is a full HTML page.",
+        ]);
+    }
 }
