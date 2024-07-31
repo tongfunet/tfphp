@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<TFPHP xmlns="http://tongfu.net/tfphp/1.0.0">
+    <database>
+        <default driver="mysql" host="tfmysql" port="3306" username="root" password="abcdef" database="test"></default>
+    </database>
+</TFPHP>

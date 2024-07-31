@@ -2,7 +2,7 @@
 
 namespace tfphp\framework\system;
 
-use tfphp\tfphp;
+use tfphp\framework\tfphp;
 use tfphp\framework\view\tfview;
 
 class tfpage {

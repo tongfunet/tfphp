@@ -2,7 +2,7 @@
 
 namespace tfphp\framework\view;
 
-use tfphp\tfphp;
+use tfphp\framework\tfphp;
 
 class tfview{
     private tfphp $tfphp;

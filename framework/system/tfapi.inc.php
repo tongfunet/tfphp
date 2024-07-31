@@ -2,7 +2,7 @@
 
 namespace tfphp\framework\system;
 
-use tfphp\tfphp;
+use tfphp\framework\tfphp;
 
 class tfapi {
     protected tfphp $tfphp;

@@ -2,8 +2,7 @@
 
 namespace tfphp\framework\system\server;
 
-use http\Exception;
-use tfphp\tfphp;
+use tfphp\framework\tfphp;
 
 class tfresponse{
     private tfphp $tfphp;

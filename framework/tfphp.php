@@ -1,7 +1,8 @@
 <?php
 
-namespace tfphp;
+namespace tfphp\framework;
 
+use tfphp\framework\database\tfdo;
 use tfphp\framework\system\server\tfrequest;
 use tfphp\framework\system\server\tfresponse;
 
@@ -9,11 +10,52 @@ define("TFPHP_ROOT", realpath(__DIR__. "/.."));
 class tfphp{
     private tfrequest $request;
     private tfresponse $response;
+    private array $config;
+    private array $dataSources;
+    public function __construct(){
+        $this->request = new tfrequest($this);
+        $this->response = new tfresponse($this);
+        $this->config = $this->loadConfig();
+        $this->dataSources = [];
+    }
     public function getRequest(): tfrequest{
         return $this->request;
     }
     public function getResponse(): tfresponse{
         return $this->response;
+    }
+    private function parseConfigXML(&$config){
+        if(isset($config["@attributes"])){
+            $config = array_merge($config, $config["@attributes"]);
+            unset($config["@attributes"]);
+        }
+        if(is_array($config)){
+            foreach ($config as $k => $v){
+                $config[$k] = $this->parseConfigXML($config[$k]);
+            }
+        }
+        return $config;
+    }
+    private function loadConfig(): array{
+        $configFilepath = TFPHP_ROOT. "/config/tfphp.xml";
+        if(file_exists($configFilepath)){
+            $config = simplexml_load_file(TFPHP_ROOT. "/config/tfphp.xml");
+            $config = json_encode($config);
+            $config = json_decode($config, true);
+            $config = $this->parseConfigXML($config);
+            return $config;
+        }
+        return [];
+    }
+    public function getConfig(): array{
+        return $this->config;
+    }
+    public function getDataSource(string $name=null): tfdo{
+        if(!$name) $name = "default";
+        if(!isset($this->dataSources[$name])){
+            $this->dataSources[$name] = new tfdo($this, $this->config["database"][$name]);
+        }
+        return $this->dataSources[$name];
     }
     public function responseData(int $dataType, ?string $dataCharset, $data){
         $this->response->setDataType($dataType);
@@ -53,9 +95,6 @@ class tfphp{
                     $_GET[$qsItem] = "";
                 }
             }
-        }
-        else{
-            $ru = $pru = substr($ru, 0, -1);
         }
         if(substr($pru, -1) == "/") $pru .= "index";
         $extension = "";
@@ -135,5 +174,5 @@ function tfphpAutoload($class){
     include_once $classFilepath;
     return true;
 }
-spl_autoload_register("tfphp\\tfphpAutoload");
+spl_autoload_register("tfphp\\framework\\tfphpAutoload");
 tfphp::run();
