@@ -101,8 +101,17 @@ class tfphp{
         if(($p = strrpos($pru, ".")) !== false){
             $extension = strtolower(substr($pru, $p+1));
         }
-        if($extension){
-            $className = "tfphp\\controller\\tfphp\\_static";
+        if($extension || substr($pru, 0, 7) == "/tfphp/"){
+            if($extension){
+                $tfphpFunction = "_static";
+            }
+            else{
+                $tfphpFunction = substr($pru, 7);
+            }
+            $className = "tfphp\\framework\\controller\\tfphp\\". $tfphpFunction;
+            if(!class_exists($className)){
+                throw new \Exception("class '". $className. "' is not found");
+            }
             $_SERVER["SCRIPT_FILENAME"] = substr(str_replace("\\", "/", $className), 16). ".inc.php";
             $_SERVER["SCRIPT_NAME"] = $_SERVER["SCRIPT_FILENAME"];
             $_SERVER["REQUEST_URI"] = $ru;
@@ -112,7 +121,7 @@ class tfphp{
             $class = new \ReflectionClass($className);
             $parentClassName = $class->getParentClass()->getName();
             $parentClassBaseName = substr($parentClassName, 23);
-            if(!in_array($parentClassBaseName, ["tfapi"])){
+            if(!in_array($parentClassBaseName, ["tfpage", "tfapi", "tfrestfulAPI"])){
                 throw new \Exception("class '". $className. "' is invalid");
             }
             $classInstance = $class->newInstanceArgs([$this]);

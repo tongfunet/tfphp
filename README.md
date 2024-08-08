@@ -1,4 +1,4 @@
-<h1 align="center">TFPHP v0.5.0</h1>
+<h1 align="center">TFPHP v0.5.2</h1>
 
 ## TFPHP
 
@@ -45,7 +45,7 @@ server {
     root           /var/www/html;
     index          index.html index.htm index.php;
 
-    if ($uri ~ !(\.(zip|rar|gz|bz|7z|jpg|jpeg|png|gif))$) {
+    if ( $uri !~* (\.(zip|rar|gz|bz|7z|jpg|jpeg|png|gif))$ ) {
         rewrite ^(.*)$ /framework/tfphp.php;
     }
     location ~ \.php$ {
