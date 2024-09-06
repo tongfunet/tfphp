@@ -9,8 +9,11 @@ class tfrestfulAPI {
     public function __construct(tfphp $tfphp){
         $this->tfphp = $tfphp;
     }
-    protected function response($data, $dataCharset=null){
-        $this->tfphp->responseJsonData($data, $dataCharset);
+    protected function response($data, $dataCharset=null, bool $stopScript=true){
+        $this->tfphp->responseJsonData($data, $dataCharset, $stopScript);
+    }
+    public function location(string $url, bool $stopScript=true){
+        $this->tfphp->location($url, $stopScript);
     }
     protected function onGET(){
 

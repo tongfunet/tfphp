@@ -2,8 +2,8 @@
 
 namespace tfphp\framework\model;
 
-use tfphp\framework\tfphp;
 use tfphp\framework\database\tfdo;
+use tfphp\framework\tfphp;
 
 class tfdaoSingle extends tfdao {
     protected tfdo $tfdo;
@@ -73,7 +73,6 @@ class tfdaoSingle extends tfdao {
             }
         }
         $sql = substr($sql, 0, -5);
-//        var_dump($sql, $params);
         return [$sql, $params];
     }
     public function select(array $query, string $constraintName=null): ?array{
@@ -111,7 +110,6 @@ class tfdaoSingle extends tfdao {
             $names[] = $dataParam["name"];
         }
         $sql = "INSERT INTO ". $this->tableName. " (". implode(",", $fields). ") VALUES (". implode(",", $names). ")";
-//        var_dump($sql, $dataParams);
         return $this->tfdo->execute($sql, $dataParams);
     }
     public function update(array $query, array $data, string $constraintName=null, array $options=null): bool{
@@ -170,7 +168,6 @@ class tfdaoSingle extends tfdao {
             }
         }
         $sql = substr($sql, 0, -5);
-//        var_dump($sql, $params);
         return $this->tfdo->execute($sql, $params);
     }
     public function delete(array $query, string $constraintName=null): bool{
@@ -200,7 +197,6 @@ class tfdaoSingle extends tfdao {
             }
         }
         $sql = substr($sql, 0, -5);
-//        var_dump($sql, $params);
         return $this->tfdo->execute($sql, $params);
     }
     public function getAutoIncrementField(): ?string{

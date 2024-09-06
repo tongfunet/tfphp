@@ -20,6 +20,36 @@ class tfdaoManyToMany extends tfdao {
             throw new \Exception("the number of relation param 'fieldMapping' must be 2");
         }
     }
+    public function select(array $query, string $constraintName=null): ?array{
+        $ATable = $this->tables[0];
+        $AData = $ATable->select($query, $constraintName);
+        if(!$AData){
+            return null;
+        }
+        $CTable = $this->tables[2];
+        $queryC = [];
+        foreach ($this->relationParams["fieldMapping"][0] as $k => $v){
+            $queryC[$v] = $AData[$k];
+        }
+        $CData = $CTable->selectAll($queryC);
+        if(!$CData){
+            return null;
+        }
+        $BTable = $this->tables[1];
+        $resultData = [];
+        foreach ($CData as $CDatum){
+            $queryB = [];
+            foreach ($this->relationParams["fieldMapping"][1] as $k => $v){
+                $queryB[$v] = $CDatum[$k];
+            }
+            $BDatum = $BTable->select($queryB);
+            if(!$BDatum){
+                return null;
+            }
+            $resultData[] = array_merge($AData, $CDatum, $BDatum);
+        }
+        return $resultData;
+    }
     public function insert(array $data): bool{
         $ds = $this->tfphp->getDataSource();
         $ds->beginTransaction();

@@ -2,10 +2,10 @@
 
 namespace tfphp\framework\controller;
 
-use tfphp\tfphp;
+use tfphp\framework\tfphp;
 
 class tfcontroller{
-    private tfphp $tfphp;
+    protected tfphp $tfphp;
     public function __construct(tfphp $tfphp){
         $this->tfphp = $tfphp;
     }

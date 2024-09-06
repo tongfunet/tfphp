@@ -12,6 +12,9 @@ class tfpage {
         $this->tfphp = $tfphp;
         $this->view = new tfview($tfphp);
     }
+    public function location(string $url, bool $stopScript=true){
+        $this->tfphp->location($url, $stopScript);
+    }
     protected function onLoad(){
 
     }

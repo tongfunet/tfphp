@@ -5,6 +5,9 @@ namespace tfphp\framework\controller\tfphp;
 use tfphp\framework\system\tfapi;
 
 class _build_base_models_by_datasource extends tfapi {
+    private string $projectNamespaceRoot = "tfproject";
+    private string $tfphpNamespacePrefix = "tfphp";
+    private string $modelDAORoot = TFPHP_DOCUMENT_ROOT. "/model/dao";
     private function makeClassCode(string $dbName, string $tableName, array $fields, array $constraints, ?string $autoIncrementField){
         $fieldsCode = "";
         foreach ($fields as $fieldName => $fieldParams){
@@ -48,11 +51,11 @@ class _build_base_models_by_datasource extends tfapi {
         }
         return sprintf('<?php
 
-namespace tfproject\model\dao%s;
+namespace '. $this->projectNamespaceRoot. '\model\dao%s;
 
-use tfphp\tfphp;
-use tfphp\model\tfdao;
-use tfphp\model\tfdaoSingle;
+use '. $this->tfphpNamespacePrefix. '\tfphp;
+use '. $this->tfphpNamespacePrefix. '\model\tfdao;
+use '. $this->tfphpNamespacePrefix. '\model\tfdaoSingle;
 
 class %s extends tfdaoSingle{
     public function __construct(tfphp $tfphp){
@@ -84,7 +87,6 @@ class %s extends tfdaoSingle{
                     $createTableSQLLines = explode("\n", $createTableSQL);
                     for($i=0;$i<count($createTableSQLLines);$i++){
                         $createTableSQLLine = $createTableSQLLines[$i];
-//                        var_dump($createTableSQLLine);
                         if(preg_match("/^[\s\t]*\`([^\`]+)\`[\s\t]*([a-z0-9]+)/", $createTableSQLLine, $rg)){
                             $fieldName = $rg[1];
                             $fieldType = $rg[2];
@@ -103,7 +105,6 @@ class %s extends tfdaoSingle{
                             if(preg_match("/[\s\t]+not[\s\t]+null/i", $createTableSQLLine) && !preg_match("/[\s\t]+default[\s\t]+/i", $createTableSQLLine) && !$autoIncrement){
                                 $required = true;
                             }
-//                            var_dump($tableName. ".". $fieldName, $fieldType, $required);
                             $fields[$fieldName] = ["@type"=>$fieldType];
                             if($required){
                                 $fields[$fieldName]["@required"] = "true";
@@ -111,20 +112,22 @@ class %s extends tfdaoSingle{
                         }
                         else if(preg_match("/^[\s\t]*(PRIMARY KEY|UNIQUE KEY|KEY)?([^\(]+)\(([^\)]+)\)/", $createTableSQLLine, $rg)){
                             $constraintType = trim($rg[1]);
-                            $constraintName = str_replace("`", "", trim($rg[2]));
-                            if($constraintName == ""){
-                                $constraintName = "default";
+                            if(!in_array($constraintType, ["KEY"])){
+                                $constraintName = str_replace("`", "", trim($rg[2]));
+                                if($constraintName == ""){
+                                    $constraintName = "default";
+                                }
+                                $constraintFields = explode(",", str_replace("`", "", $rg[3]));
+                                $constraints[$constraintName] = $constraintFields;
                             }
-                            $constraintFields = explode(",", str_replace("`", "", $rg[3]));
-//                            var_dump($constraintType, $constraintName, $constraintFields);
-                            $constraints[$constraintName] = $constraintFields;
                         }
                     }
                     $this->makeClassCode($dbName, $tableName, $fields, $constraints, $autoIncrementField);
-                    $classFilepath = TFPHP_DOCUMENT_ROOT. "/web-inf/model/dao". (($_GET["withDatabaseNamespace"] == "yes") ? "/". $dbName : ""). "/". $tableName. ".inc.php";
+                    $classFilepath = $this->modelDAORoot. (($_GET["withDatabaseNamespace"] == "yes") ? "/". $dbName : ""). "/". $tableName. ".inc.php";
+                    $classDirpath = dirname($classFilepath);
                     $mkdirRet = true;
-                    if(!file_exists($classFilepath)){
-                        $mkdirRet = mkdir(dirname($classFilepath), 0777);
+                    if(!file_exists($classDirpath)){
+                        $mkdirRet = mkdir($classDirpath, 0777);
                     }
                     $writeFileRet = file_put_contents($classFilepath, $this->makeClassCode($dbName, $tableName, $fields, $constraints, $autoIncrementField));
                     $result[] = [

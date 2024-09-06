@@ -5,7 +5,7 @@ namespace tfphp\framework\model;
 use tfphp\framework\tfphp;
 
 class tfmodel{
-    private tfphp $tfphp;
+    protected tfphp $tfphp;
     private array $dao;
     public function __construct(tfphp $tfphp, array $dao){
         $this->tfphp = $tfphp;

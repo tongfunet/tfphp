@@ -13,12 +13,33 @@ class tfdaoOneToMany extends tfdao {
         $this->tables = $tables;
         $this->relationParams = $relationParams;
         $this->options = $options;
-        if(count($this->tables) < 2){
+        if(count($this->tables) != 2){
             throw new \Exception("the number of tables should be at east 2");
         }
         if(count($this->tables) != (count($this->relationParams["fieldMapping"]) + 1)){
             throw new \Exception("the number of relation param 'fieldMapping' must be ". strval(count($this->tables) - 1));
         }
+    }
+    public function select(array $query, string $constraintName=null): ?array{
+        $ATable = $this->tables[0];
+        $AData = $ATable->select($query, $constraintName);
+        if(!$AData){
+            return null;
+        }
+        $BTable = $this->tables[1];
+        $queryB = [];
+        foreach ($this->relationParams["fieldMapping"][0] as $k => $v){
+            $queryB[$v] = $AData[$k];
+        }
+        $BData = $BTable->selectAll($queryB);
+        if(!$BData){
+            return null;
+        }
+        $resultData = [];
+        foreach ($BData as $BDatum){
+            $resultData[] = array_merge($AData, $BDatum);
+        }
+        return $resultData;
     }
     public function update(array $data, string $constraintName=null): bool{
         $ds = $this->tfphp->getDataSource();

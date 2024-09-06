@@ -2,6 +2,7 @@
 
 namespace tfphp\framework\system\server;
 
+use http\Exception;
 use tfphp\framework\tfphp;
 
 class tfresponse{
@@ -70,7 +71,7 @@ class tfresponse{
                 echo $this->data;
                 break;
             case tfresponse::T_DATA_PLAINTEXT:
-                $this->header("Content-Type", "text/plaintext; charset=". $this->dataCharset);
+                $this->header("Content-Type", "text/plain; charset=". $this->dataCharset);
                 echo $this->data;
                 break;
             default:

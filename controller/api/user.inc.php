@@ -2,32 +2,13 @@
 
 namespace tfphp\controller\api;
 
-use tfphp\framework\system\tfrestfulAPI;
+use tfphp\framework\system\tfapi;
+use tfphp\model\user as userModel;
 
-class user extends tfrestfulAPI {
-    private function responseDemo(string $method){
-        $data = [
-            "METHOD"=>$method,
-            "RESTFUL"=>[
-                "RESOURCE"=>[
-                    "NAME"=>$_SERVER["RESTFUL_RESOURCE_NAME"],
-                    "VALUE"=>$_SERVER["RESTFUL_RESOURCE_VALUE"],
-                    "FUNCTION"=>$_SERVER["RESTFUL_RESOURCE_FUNCTION"],
-                ]
-            ]
-        ];
-        $this->response($data);
-    }
-    protected function onGET(){
-        $this->responseDemo("GET");
-    }
-    protected function onPOST(){
-        $this->responseDemo("POST");
-    }
-    protected function onPUT(){
-        $this->responseDemo("PUT");
-    }
-    protected function onDELETE(){
-        $this->responseDemo("DELETE");
+class user extends tfapi {
+    protected function onLoad(){
+        $user = new userModel($this->tfphp);
+        $users = $user->getUsers();
+        $this->responseJsonData($users);
     }
 }

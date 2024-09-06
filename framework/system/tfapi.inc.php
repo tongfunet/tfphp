@@ -9,14 +9,17 @@ class tfapi {
     public function __construct(tfphp $tfphp){
         $this->tfphp = $tfphp;
     }
-    protected function responseJsonData($data, $dataCharset=null){
-        $this->tfphp->responseJsonData($data, $dataCharset);
+    protected function responseJsonData($data, $dataCharset=null, bool $stopScript=true){
+        $this->tfphp->responseJsonData($data, $dataCharset, $stopScript);
     }
-    public function responseHtmlData($data, string $dataCharset=null){
-        $this->tfphp->responseHtmlData($data, $dataCharset);
+    public function responseHtmlData($data, string $dataCharset=null, bool $stopScript=true){
+        $this->tfphp->responseHtmlData($data, $dataCharset, $stopScript);
     }
-    public function responsePlaintextData($data, string $dataCharset=null){
-        $this->tfphp->responsePlaintextData($data, $dataCharset);
+    public function responsePlaintextData($data, string $dataCharset=null, bool $stopScript=true){
+        $this->tfphp->responsePlaintextData($data, $dataCharset, $stopScript);
+    }
+    public function location(string $url, bool $stopScript=true){
+        $this->tfphp->location($url, $stopScript);
     }
     protected function onLoad(){
 

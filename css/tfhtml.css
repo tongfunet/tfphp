@@ -1,0 +1,39 @@
+/*
+ * table
+ */
+
+.table{
+
+}
+
+.table .pagination{
+
+}
+
+.table .pagination a{
+    display: inline-block;
+    padding: 2px 6px;
+    color: #333;
+    cursor: pointer;
+    text-decoration: underline;
+}
+.table .pagination a.active{
+    color: red;
+}
+.table .pagination a:hover{
+    text-decoration: none;
+}
+
+/*
+ * tips
+ */
+
+.tips{
+    display: block;
+    position: absolute;
+    background: #333;
+    border: 0;
+    border-radius: 8px;
+    padding: 3px 6px;
+    color: #fff;
+}
