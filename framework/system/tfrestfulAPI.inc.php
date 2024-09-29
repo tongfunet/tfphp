@@ -2,6 +2,7 @@
 
 namespace tfphp\framework\system;
 
+use tfphp\framework\system\server\tfresponse;
 use tfphp\framework\tfphp;
 
 class tfrestfulAPI {
@@ -9,11 +10,18 @@ class tfrestfulAPI {
     public function __construct(tfphp $tfphp){
         $this->tfphp = $tfphp;
     }
-    protected function response($data, $dataCharset=null, bool $stopScript=true){
-        $this->tfphp->responseJsonData($data, $dataCharset, $stopScript);
+    private function response($data, $dataCharset, $dataType){
+        $resp = $this->tfphp->getResponse();
+        $resp->setDataType($dataType);
+        $resp->setDataCharset(($dataCharset) ? $dataCharset : "UTF-8");
+        $resp->setData($data);
+        $resp->response();
     }
-    public function location(string $url, bool $stopScript=true){
-        $this->tfphp->location($url, $stopScript);
+    protected function responseJsonData($data, $dataCharset=null){
+        $this->tfphp->getResponse()->responseJsonData($data, $dataCharset);
+    }
+    protected function location(string $url){
+        $this->tfphp->getResponse()->location($url);
     }
     protected function onGET(){
 

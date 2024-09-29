@@ -20,7 +20,7 @@ server {
     root           /var/www/html;
     index          index.html index.htm index.php;
 
-    rewrite ^(.*)$ /framework/tfphp.php;
+    rewrite ^(.*)$ /index.php;
     location ~ \.php$ {
         client_body_buffer_size      1m;
 
@@ -46,7 +46,7 @@ server {
     index          index.html index.htm index.php;
 
     if ( $uri !~* (\.(zip|rar|gz|bz|7z|jpg|jpeg|png|gif))$ ) {
-        rewrite ^(.*)$ /framework/tfphp.php;
+        rewrite ^(.*)$ /index.php;
     }
     location ~ \.php$ {
         client_body_buffer_size      1m;
@@ -60,12 +60,12 @@ server {
 }
 ```
 
-This is an example of a regular webpage, where the controller object extends the class tfphp\framework\system\tfpage:
+This is an example of a regular webpage, where the controller object extends the class tfphp\framework\framework\framework\system\tfpage:
 
 ```php
-namespace tfphp\controller;
+namespace tfphp\framework\framework\controller;
 
-use tfphp\framework\system\tfpage;
+use tfphp\framework\framework\framework\system\tfpage;
 
 class index extends tfpage {
     protected function onLoad(){
@@ -78,12 +78,12 @@ class index extends tfpage {
 }
 ```
 
-This is an example of an API interface, where the controller object extension class tfphp\framework\system\tfapi:
+This is an example of an API interface, where the controller object extension class tfphp\framework\framework\framework\system\tfapi:
 
 ```php
-namespace tfphp\controller\api;
+namespace tfphp\framework\framework\controller\api;
 
-use tfphp\framework\system\tfapi;
+use tfphp\framework\framework\framework\system\tfapi;
 
 class userState extends tfapi {
     protected function onLoad(){
@@ -92,12 +92,12 @@ class userState extends tfapi {
 }
 ```
 
-This is an example of a RESTful style interface, where the controller object extends class tfphp\framework\system\tfrestfulAPI:
+This is an example of a RESTful style interface, where the controller object extends class tfphp\framework\framework\framework\system\tfrestfulAPI:
 
 ```php
-namespace tfphp\controller\api;
+namespace tfphp\framework\framework\controller\api;
 
-use tfphp\framework\system\tfrestfulAPI;
+use tfphp\framework\framework\framework\system\tfrestfulAPI;
 
 class user extends tfrestfulAPI {
     private function responseDemo(string $method){
@@ -193,13 +193,13 @@ This is the configuration file for the testing program:
 This is the model class for the user module of the testing program:
 
 ```php
-namespace tfphp\model;
+namespace tfphp\framework\framework\model;
 
-use tfphp\framework\tfphp;
-use tfphp\framework\model\tfmodel;
-use tfphp\framework\model\tfdao;
-use tfphp\framework\model\tfdaoSingle;
-use tfphp\framework\model\tfdaoOneToOne;
+use tfphp\framework\framework\framework\tfphp;
+use tfphp\framework\framework\framework\model\tfmodel;
+use tfphp\framework\framework\framework\model\tfdao;
+use tfphp\framework\framework\framework\model\tfdaoSingle;
+use tfphp\framework\framework\framework\model\tfdaoOneToOne;
 
 class user extends tfmodel{
     public function __construct(tfphp $tfphp){
@@ -251,10 +251,10 @@ class user extends tfmodel{
 This is the controller class for the user module of the testing program:
 
 ```php
-namespace tfphp\controller\api\test;
+namespace tfphp\framework\framework\controller\api\test;
 
-use tfphp\framework\system\tfapi;
-use tfphp\model\user as modelUser;
+use tfphp\framework\framework\framework\system\tfapi;
+use tfphp\framework\framework\model\user as modelUser;
 
 class user extends tfapi {
     protected function onLoad(){
@@ -308,14 +308,14 @@ class user extends tfapi {
 This is the model class of the article module of the testing program:
 
 ```php
-namespace tfphp\model;
+namespace tfphp\framework\framework\model;
 
-use tfphp\framework\tfphp;
-use tfphp\framework\model\tfmodel;
-use tfphp\framework\model\tfdao;
-use tfphp\framework\model\tfdaoSingle;
-use tfphp\framework\model\tfdaoOneToMany;
-use tfphp\framework\model\tfdaoManyToMany;
+use tfphp\framework\framework\framework\tfphp;
+use tfphp\framework\framework\framework\model\tfmodel;
+use tfphp\framework\framework\framework\model\tfdao;
+use tfphp\framework\framework\framework\model\tfdaoSingle;
+use tfphp\framework\framework\framework\model\tfdaoOneToMany;
+use tfphp\framework\framework\framework\model\tfdaoManyToMany;
 
 class article extends tfmodel{
     public function __construct(tfphp $tfphp){
@@ -401,10 +401,10 @@ class article extends tfmodel{
 This is the controller class of the test program's article module:
 
 ```php
-namespace tfphp\controller\api\test;
+namespace tfphp\framework\framework\controller\api\test;
 
-use tfphp\framework\system\tfapi;
-use tfphp\model\article as modelArticle;
+use tfphp\framework\framework\framework\system\tfapi;
+use tfphp\framework\framework\model\article as modelArticle;
 
 class article extends tfapi {
     protected function onLoad(){

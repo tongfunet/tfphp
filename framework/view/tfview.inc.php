@@ -3,7 +3,6 @@
 namespace tfphp\framework\view;
 
 use tfphp\framework\tfphp;
-use tfproject\model\article;
 
 class tfview{
     protected tfphp $tfphp;
@@ -11,18 +10,16 @@ class tfview{
     private string $compileDir;
     private array $tplVariables;
     private array $tplKeepVariables;
+    private string $jsExtraQS;
+    private string $cssExtraQS;
     public function __construct(tfphp $tfphp){
         $this->tfphp = $tfphp;
         $tfviewDir = TFPHP_DOCUMENT_ROOT. "/view/tfview";
         $this->templateDir = $tfviewDir. "/template";
         $this->compileDir = $tfviewDir. "/compile";
         $this->tplVariables = $this->tplKeepVariables = [];
-    }
-    private function readFileFirstLine(string $filepath): string{
-        $fo = fopen($filepath, "r");
-        $line = fgets($fo);
-        fclose($fo);
-        return $line;
+        $this->jsExtraQS = strval($this->tfphp->getConfig()["view"]["resource"]["css"]["extraQS"]);
+        $this->cssExtraQS = strval($this->tfphp->getConfig()["view"]["resource"]["js"]["extraQS"]);
     }
     private function compileEnvEncode(string $templateBasepath, string $templateFilepath): string{
         $compileEnv = [$templateBasepath, filemtime($templateFilepath), filesize($templateFilepath)];
@@ -96,6 +93,10 @@ class tfview{
                         $myCompileBasepath = $filepath. ".php";
                         $this->doCompile($myTemplateBasepath);
                         $code = "include(\"". $myCompileBasepath. "\");";
+                    }
+                    else if(preg_match("/resource[\s\t]+(css|js)\=(?:\'([^\']+)\'|\"([^\"]+)\")/i", $code, $rg)){
+                        $filepath = ($rg[2]) ? $rg[2] : $rg[3];
+                        $code = "echo \$this->htmlReference". strtoupper($rg[1]). "(\"". $filepath. "\");";
                     }
                     else if(preg_match("/for[\s\t]+\\$([a-zA-Z0-9_]+)[\s\t]+in[\s\t]+\\$([a-zA-Z0-9_\.]+)/", $code, $rg)){
                         $itemsName = $rg[2];
@@ -173,6 +174,14 @@ class tfview{
     }
     public function setVar(string $varName, $varValue){
         $this->tplVariables[$varName] = $varValue;
+    }
+    public function htmlReferenceJS(string $filepath): string{
+        if($this->jsExtraQS) $filepath .= ((strpos($filepath, "?") === false) ? "?" : "&"). $this->jsExtraQS;
+        return sprintf("<script type=\"text/javascript\" src=\"%s\"></script>", $filepath);
+    }
+    public function htmlReferenceCSS(string $filepath): string{
+        if($this->cssExtraQS) $filepath .= ((strpos($filepath, "?") === false) ? "?" : "&"). $this->cssExtraQS;
+        return sprintf("<link rel=\"stylesheet\" type=\"text/css\" href=\"%s\" />", $filepath);
     }
     public function load(): bool{
         $templateFilename = str_replace("", "", substr($_SERVER["SCRIPT_FILENAME"], 0, -8));

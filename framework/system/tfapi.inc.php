@@ -2,6 +2,7 @@
 
 namespace tfphp\framework\system;
 
+use tfphp\framework\system\server\tfresponse;
 use tfphp\framework\tfphp;
 
 class tfapi {
@@ -9,17 +10,17 @@ class tfapi {
     public function __construct(tfphp $tfphp){
         $this->tfphp = $tfphp;
     }
-    protected function responseJsonData($data, $dataCharset=null, bool $stopScript=true){
-        $this->tfphp->responseJsonData($data, $dataCharset, $stopScript);
+    protected function responseJsonData($data, $dataCharset=null){
+        $this->tfphp->getResponse()->responseJsonData($data, $dataCharset);
     }
-    public function responseHtmlData($data, string $dataCharset=null, bool $stopScript=true){
-        $this->tfphp->responseHtmlData($data, $dataCharset, $stopScript);
+    protected function responseHtmlData($data, string $dataCharset=null){
+        $this->tfphp->getResponse()->responseHtmlData($data, $dataCharset);
     }
-    public function responsePlaintextData($data, string $dataCharset=null, bool $stopScript=true){
-        $this->tfphp->responsePlaintextData($data, $dataCharset, $stopScript);
+    protected function responsePlaintextData($data, string $dataCharset=null){
+        $this->tfphp->getResponse()->responsePlaintextData($data, $dataCharset);
     }
-    public function location(string $url, bool $stopScript=true){
-        $this->tfphp->location($url, $stopScript);
+    protected function location(string $url){
+        $this->tfphp->getResponse()->location($url);
     }
     protected function onLoad(){
 

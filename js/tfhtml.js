@@ -1,4 +1,22 @@
 /**
+ * features
+ */
+(function($){
+    var makeGET = function(){
+        var url = document.location.href, qs = ((qsp = url.indexOf("?")) === -1) ? "" : url.substr(qsp+1), qsa, qsia, gets = {};
+        if(qs){
+            qsa = qs.split("&");
+            for(var i=0;i<qsa.length;i++){
+                qsia = qsa[i].split("=");
+                gets[qsia[0]] = qsia[1];
+            }
+        }
+        return gets;
+    };
+    $.gets = makeGET();
+})(jQuery);
+
+/**
  * tftable
  *
  * options:
@@ -53,18 +71,21 @@
             params.a.onProcessSuccess, params.a.onProcessError,
             params.a.onDrawData, params.a.onCreateBodyRow, params.a.onCreateBodyRowField,
             params.a.onDrawHead, params.a.onDrawPage, params.a.onCreatePageButton, params.a.onDrawTable,
+            params.a.afterProcessSuccess,
             params.o, params.s);
     }, _loadData = function(f1, f2, f3,
                             f4, f5,
                             f6, f7, f8,
                             f9, f10, f11, f12,
+                            f13,
                             o, s){
         $.ajax({
             url: makeDataUrl(f1, o, {pn: s.getDataUrlPN(), sorts: s.getDataUrlSorts()}),
             method: makeDataMethod(f2, o),
             data: makeDataData(f3, o),
             success: function(d){
-                return f4 ? f4.call(o, d) : processSuccess(f6, f7, f8, f9, f10, f11, f12, o, s, d) ;
+                (f4 ? f4.call(o, d) : processSuccess(f6, f7, f8, f9, f10, f11, f12, o, s, d));
+                (f13 ? f13.call(o, d) : afterProcessSuccess(o, s, d));
             },
             error: function(xhr, st, err){
                 return f5 ? f5.call(o, xhr, st, err) : processError(xhr, st, err) ;
@@ -80,6 +101,8 @@
         drawData(f1, f2, f3, f4, f5, f6, f7, o, s.params.a, d);
         eventSort(s, s.params.a);
         eventPage(s, s.params.a);
+    }, afterProcessSuccess = function(o, s, d){
+
     }, processError = function(xhr, st, err){
         console.log(xhr, st, err);
     }, drawData = function(f1, f2, f3, f4, f5, f6, f7, o, a, d){

@@ -30,4 +30,27 @@ class user extends tfmodel{
         }
         return $users;
     }
+    public function getUsersWithPages(): array{
+        $ds = $this->tfphp->getDataSource();
+        $pp = 2;
+        $cp = ($_GET["pn"]) ? $_GET["pn"] : 1;
+        // process
+        $sql = "select * from user u 
+            inner join userDetail ud 
+            on u.userId = ud.userId
+            order by u.userId desc";
+        $totalUsers = $ds->fetchOne3("select count(*) as cc from (". preg_replace("/select.*from/i", "select 1 from", $sql). ") as tt", []);
+        if($totalUsers === null){
+            return [];
+        }
+        $pages = $ds->makePagination($totalUsers["cc"], $pp, $cp);
+        $users = $ds->fetchMany3($sql, [], ($cp-1)*$pp, $pp);
+        if($users === null){
+            return [];
+        }
+        return [
+            "data"=>$users,
+            "page"=>$pages,
+        ];
+    }
 }

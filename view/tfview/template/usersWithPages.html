@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><% $title %></title>
+</head>
+<body>
+<div style="margin: 0 auto; width: 1000px;">
+    <h1>TFPHP v0.6.2</h1>
+    <div>
+        <a href="JavaScript:history.back()">back</a>
+    </div>
+    <h2>user list with pages</h2>
+    <div>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>name</th>
+                    <th>state</th>
+                    <th>create time</th>
+                    <th>update time</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% if $users.data %>
+            <% for $user in $users.data %>
+                <tr>
+                    <td><% $user.userId %></td>
+                    <td><% $user.userName %></td>
+                    <td><% $user.state %></td>
+                    <td><% $user.createDT %></td>
+                    <td><% $user.updateDT %></td>
+                </tr>
+            <% /for %>
+            <tr>
+                <td colspan="5">
+                    <% if $users.page.links.first > 0 %><a href="usersWithPages">first</a><% /if %>
+                    <% if $users.page.links.previous > 0 %><a href="usersWithPages?pn=<% $users.page.links.previous %>">previous</a><% /if %>
+                    <% if $users.page.links.next > 0 %><a href="usersWithPages?pn=<% $users.page.links.next %>">next</a><% /if %>
+                    <% if $users.page.links.last > 0 %><a href="usersWithPages?pn=<% $users.page.links.last %>">last</a><% /if %>
+                </td>
+            </tr>
+            <% else %>
+            <tr>
+                <td colspan="5">
+                    user records are not found
+                </td>
+            </tr>
+            <% /if %>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

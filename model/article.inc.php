@@ -41,4 +41,25 @@ class article extends tfmodel{
         }
         return $articles;
     }
+    public function getArticlesWithPages(): array{
+        $ds = $this->tfphp->getDataSource();
+        $pp = 3;
+        $cp = ($_GET["pn"]) ? $_GET["pn"] : 1;
+        // process
+        $sql = "select * from article a
+            order by a.articleId desc";
+        $totalArticles = $ds->fetchOne3("select count(*) as cc from (". preg_replace("/select.*from/i", "select 1 from", $sql). ") as tt", []);
+        if($totalArticles === null){
+            return [];
+        }
+        $pages = $ds->makePagination($totalArticles["cc"], $pp, $cp);
+        $articles = $ds->fetchMany3($sql, [], ($cp-1)*$pp, $pp);
+        if($articles === null){
+            return [];
+        }
+        return [
+            "data"=>$articles,
+            "page"=>$pages,
+        ];
+    }
 }

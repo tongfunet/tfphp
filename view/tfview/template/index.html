@@ -5,65 +5,26 @@
 </head>
 <body>
 <div style="margin: 0 auto; width: 1000px;">
-    <h1>TFPHP v0.6.0</h1>
+    <h1>TFPHP v0.6.2</h1>
     <h2>APIs</h2>
     <ul>
-        <li><a href="/css/tfhtml.css">test for getStaticRoutes (/css/tfhtml.css)</a> </li>
-        <li><a href="/js/tfhtml.js">test for getStaticRoutes (/js/tfhtml.js)</a> </li>
+        <li><a href="css/tfhtml.css">test for getStaticRoutes (/css/tfhtml.css)</a> </li>
+        <li><a href="js/tfhtml.js">test for getStaticRoutes (/js/tfhtml.js)</a> </li>
         <li><a href="class/123/doc/456.html">test for getRERoutes</a> </li>
+        <li><a href="cropImage.html">test for crop image</a> </li>
+        <li><a href="watermarkImage.html">test for watermark image</a> </li>
         <li><a href="api/user">test for api with database (user list)</a> </li>
         <li><a href="api/article">test for api with database (article list)</a> </li>
         <li><a href="api/restfulAPI/_user">test for RestfulAPI with database (user CRUD operations)</a> </li>
         <li><a href="api/restfulAPI/_article">test for RestfulAPI with database (article CRUD operations)</a> </li>
     </ul>
-    <h2>user list</h2>
-    <table border="1">
-        <thead>
-        <tr>
-            <td>ID</td>
-            <td>name</td>
-            <td>state</td>
-            <td>create time</td>
-            <td>update time</td>
-        </tr>
-        </thead>
-        <tbody>
-        <% if $users %>
-        <% for $user in $users %>
-        <tr>
-            <td><% $user.userId %></td>
-            <td><% if $user.userName == "tongfu" %><span style="color: red;"><% $user.userName %></span><% else %><% $user.userName %><% /if %></td>
-            <td><% $user.state %></td>
-            <td><% $user.createDT %></td>
-            <td><% $user.updateDT %></td>
-        </tr>
-        <% /for %>
-        <% else %>
-        <tr><td colspan="5">pls call API /api/restfulAPI/_user by method POST!!!</td></tr>
-        <% /if %>
-        </tbody>
-    </table>
-    <h2>article list</h2>
-    <table border="1">
-        <thead>
-        <tr>
-            <td>ID</td>
-            <td>title</td>
-        </tr>
-        </thead>
-        <tbody>
-        <% if $articles %>
-        <% for $article in $articles %>
-        <tr>
-            <td><% $article.articleId %></td>
-            <td><% $article.title %></td>
-        </tr>
-        <% /for %>
-        <% else %>
-        <tr><td colspan="2">pls call API /api/restfulAPI/_article by method POST!!!</td></tr>
-        <% /if %>
-        </tbody>
-    </table>
+    <h2>pages</h2>
+    <ul>
+        <li><a href="users">test for datagrid (user list)</a> </li>
+        <li><a href="articles">test for datagrid (article list)</a> </li>
+        <li><a href="usersWithPages">test for datagrid with pages (user list)</a> </li>
+        <li><a href="articlesWithPages">test for datagrid with pages (article list)</a> </li>
+    </ul>
 </div>
 </body>
 </html>

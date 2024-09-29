@@ -36,6 +36,9 @@ class _static extends tfapi {
             case "txt":
                 $mimeType = "text/plaintext";
                 break;
+            case "ico":
+                $mimeType = "image/x-icon";
+                break;
         }
         if(!file_exists($filepath)){
             $resp->setStatusCode(404);

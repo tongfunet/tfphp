@@ -49,6 +49,10 @@ class _build_base_models_by_datasource extends tfapi {
         if($autoIncrementField){
             $autoIncrementCode = ",\n". sprintf('            "autoIncrementField"=>"%s"', $autoIncrementField);
         }
+        $dataSourceCode = "";
+        if($_GET["dataSource"]){
+            $dataSourceCode .= ",\n". sprintf('            "dataSource"=>"%s"', $_GET["dataSource"]);
+        }
         return sprintf('<?php
 
 namespace '. $this->projectNamespaceRoot. '\model\dao%s;
@@ -63,13 +67,19 @@ class %s extends tfdaoSingle{
             "name"=>"%s",
             "fields"=>[
 %s
-            ]%s%s
+            ]%s%s%s
         ]);
     }
-}', ($_GET["withDatabaseNamespace"] == "yes") ? "\\". $dbName : "", $tableName, $tableName, $fieldsCode, $constraintsCode, $autoIncrementCode);
+}', ($_GET["withoutDatabaseNamespace"] != "yes") ? "\\". $dbName : "", $tableName, $tableName, $fieldsCode, $constraintsCode, $autoIncrementCode, $dataSourceCode);
     }
     protected function onLoad(){
-        $dbs = $this->tfphp->getDataSource();
+        $dbs = $this->tfphp->getDataSource(($_GET["dataSource"]) ? $_GET["dataSource"] : null);
+        if(!$dbs){
+            $this->responseJsonData([
+                "errcode"=>1,
+                "errmsg"=>"data source is not found"
+            ]);
+        }
         $tableInfos = $dbs->fetchAll("show tables", []);
         $result = [];
         foreach ($tableInfos as $tableInfo){
@@ -123,7 +133,7 @@ class %s extends tfdaoSingle{
                         }
                     }
                     $this->makeClassCode($dbName, $tableName, $fields, $constraints, $autoIncrementField);
-                    $classFilepath = $this->modelDAORoot. (($_GET["withDatabaseNamespace"] == "yes") ? "/". $dbName : ""). "/". $tableName. ".inc.php";
+                    $classFilepath = $this->modelDAORoot. (($_GET["withoutDatabaseNamespace"] != "yes") ? "/". $dbName : ""). "/". $tableName. ".inc.php";
                     $classDirpath = dirname($classFilepath);
                     $mkdirRet = true;
                     if(!file_exists($classDirpath)){

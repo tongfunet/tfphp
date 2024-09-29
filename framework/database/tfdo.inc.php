@@ -7,40 +7,35 @@ use tfphp\framework\tfphp;
 class tfdo{
     private tfphp $tfphp;
     private array $params;
+    private bool $ready;
     private \PDO $pdo;
     public function __construct(tfphp $tfphp, array $params){
         $this->tfphp = $tfphp;
         $this->params = $params;
-        switch ($params["driver"]){
-            default:
-                if(!$params["host"]) $params["host"] = "localhost";
-                if(!$params["port"]) $params["port"] = 3306;
-                if(!$params["database"]) $params["database"] = "";
-                if(!$params["username"]) $params["username"] = "root";
-                if(!$params["password"]) $params["password"] = "";
-                if(!$params["charset"]) $params["charset"] = "utf8mb4";
-                $dsn = "mysql:host=". $params["host"]. ";port=". $params["port"]. ";dbname=". $params["database"]. ";charset=". $params["charset"];
-                $this->pdo = new \PDO($dsn, $params["username"], $params["password"]);
-                $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-                $this->pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
-                $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-                break;
+        $this->ready = false;
+    }
+    private function readyTest(){
+        if(!$this->ready){
+            $this->ready = true;
+            switch ($this->params["driver"]){
+                default:
+                    if(!$this->params["host"]) $this->params["host"] = "localhost";
+                    if(!$this->params["port"]) $this->params["port"] = 3306;
+                    if(!$this->params["database"]) $this->params["database"] = "";
+                    if(!$this->params["username"]) $this->params["username"] = "root";
+                    if(!$this->params["password"]) $this->params["password"] = "";
+                    if(!$this->params["charset"]) $this->params["charset"] = "utf8mb4";
+                    $dsn = "mysql:host=". $this->params["host"]. ";port=". $this->params["port"]. ";dbname=". $this->params["database"]. ";charset=". $this->params["charset"];
+                    $this->pdo = new \PDO($dsn, $this->params["username"], $this->params["password"]);
+                    $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                    $this->pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
+                    $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+                    break;
+            }
         }
     }
-
-    public function beginTransaction(): bool{
-        return $this->pdo->beginTransaction();
-    }
-
-    public function commit(): bool{
-        return $this->pdo->commit();
-    }
-
-    public function rollback(): bool{
-        return $this->pdo->rollBack();
-    }
-
     private function query(string $sql, array $params): \PDOStatement{
+        $this->readyTest();
         $stmt = $this->pdo->prepare($sql);
         foreach ($params as $param){
             $stmt->bindParam($param["name"], $param["value"], $param["type"]);
@@ -48,8 +43,8 @@ class tfdo{
         $stmt->execute();
         return $stmt;
     }
-
     private function query2(string $sql, array $params): \PDOStatement{
+        $this->readyTest();
         $paramsCount = count($params);
         $i = 0;
         $newParams = [];
@@ -71,8 +66,8 @@ class tfdo{
         }
         return $this->query($sql, $newParams);
     }
-
     private function query3(string $sql, array $params): \PDOStatement{
+        $this->readyTest();
         $paramsCount = count($params);
         $i = 0;
         $newParams = [];
@@ -96,22 +91,30 @@ class tfdo{
         }
         return $this->query($sql, $newParams);
     }
-
+    public function beginTransaction(): bool{
+        $this->readyTest();
+        return $this->pdo->beginTransaction();
+    }
+    public function commit(): bool{
+        $this->readyTest();
+        return $this->pdo->commit();
+    }
+    public function rollback(): bool{
+        $this->readyTest();
+        return $this->pdo->rollBack();
+    }
     public function execute(string $sql, array $params): bool{
         $this->query($sql, $params);
         return true;
     }
-
     public function execute2(string $sql, array $params): bool{
         $this->query2($sql, $params);
         return true;
     }
-
     public function execute3(string $sql, array $params): bool{
         $this->query3($sql, $params);
         return true;
     }
-
     public function fetchOne(string $sql, array $params): ?array{
         $stmt = $this->query($sql, $params);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -120,7 +123,6 @@ class tfdo{
         }
         return $row;
     }
-
     public function fetchOne2(string $sql, array $params): ?array{
         $stmt = $this->query2($sql, $params);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -129,7 +131,6 @@ class tfdo{
         }
         return $row;
     }
-
     public function fetchOne3(string $sql, array $params): ?array{
         $stmt = $this->query3($sql, $params);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -138,7 +139,6 @@ class tfdo{
         }
         return $row;
     }
-
     public function fetchMany(string $sql, array $params, int $seekBegin, int $fetchNums): ?array{
         switch ($this->params["driver"]){
             default:
@@ -151,7 +151,6 @@ class tfdo{
         }
         return $rows;
     }
-
     public function fetchMany2(string $sql, array $params, int $seekBegin, int $fetchNums): ?array{
         switch ($this->params["driver"]){
             default:
@@ -164,7 +163,6 @@ class tfdo{
         }
         return $rows;
     }
-
     public function fetchMany3(string $sql, array $params, int $seekBegin, int $fetchNums): ?array{
         switch ($this->params["driver"]){
             default:
@@ -177,7 +175,6 @@ class tfdo{
         }
         return $rows;
     }
-
     public function fetchAll(string $sql, array $params): ?array{
         $stmt = $this->query($sql, $params);
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -186,7 +183,6 @@ class tfdo{
         }
         return $rows;
     }
-
     public function fetchAll2(string $sql, array $params): ?array{
         $stmt = $this->query2($sql, $params);
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -195,7 +191,6 @@ class tfdo{
         }
         return $rows;
     }
-
     public function fetchAll3(string $sql, array $params): ?array{
         $stmt = $this->query3($sql, $params);
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
@@ -204,7 +199,6 @@ class tfdo{
         }
         return $rows;
     }
-
     public function makePagination(int $total, int $percentpage, int $currentpage): array{
         $totalpage = ceil($total/$percentpage);
         if($currentpage > $totalpage) $currentpage = $totalpage;
@@ -222,5 +216,9 @@ class tfdo{
             "currentpage"=>$currentpage,
             "links"=>$links,
         ];
+    }
+    public function getPDO(): \PDO{
+        $this->readyTest();
+        return $this->pdo;
     }
 }

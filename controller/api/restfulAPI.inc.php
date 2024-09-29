@@ -38,10 +38,10 @@ class restfulAPI extends tfrestfulAPI {
                 "nickName"=>"同福女生",
                 "description"=>"这是同福女生的个人介绍"
             ]);
-            $this->response(["errcode"=>0, "errmsg"=>"OK"]);
+            $this->responseJsonData(["errcode"=>0, "errmsg"=>"OK"]);
         }
         catch (\Exception $e){
-            $this->response(["errcode"=>1, "errmsg"=>$e->getMessage()]);
+            $this->responseJsonData(["errcode"=>1, "errmsg"=>$e->getMessage()]);
         }
     }
     private function postArticle(){
@@ -50,20 +50,21 @@ class restfulAPI extends tfrestfulAPI {
             $daoArticle = $article->getDAOSingle("article");
             for($i=0;$i<10;$i++){
                 $ret = $daoArticle->insert([
-                    "title"=>"文章". date("Y-m-d H:i:s")
+                    "title"=>"文章". date("Y-m-d H:i:s"),
+                    "content"=>"文章". date("Y-m-d H:i:s"),
+                    "createDT"=>date("Y-m-d H:i:s"),
                 ]);
                 sleep(1);
             }
-            $this->response(["errcode"=>0, "errmsg"=>"OK"]);
+            $this->responseJsonData(["errcode"=>0, "errmsg"=>"OK"]);
         }
         catch (\Exception $e){
-            $this->response(["errcode"=>1, "errmsg"=>$e->getMessage()]);
+            $this->responseJsonData(["errcode"=>1, "errmsg"=>$e->getMessage()]);
         }
     }
     private function testUser(){
         $user = new user($this->tfphp);
         try {
-            $this->tfphp->responseHtmlData("", null, false);
             $daoUser = $user->getDAOOneToOne("user");
 
             // insert
@@ -115,7 +116,6 @@ class restfulAPI extends tfrestfulAPI {
     private function testArticle(){
         $article = new article($this->tfphp);
         try {
-            $this->tfphp->responseHtmlData("", null, false);
             $daoArticle = $article->getDAOSingle("article");
             $daoArticleClass = $article->getDAOSingle("articleClass");
             $daoArticleTag = $article->getDAOSingle("articleTag");
@@ -130,7 +130,9 @@ class restfulAPI extends tfrestfulAPI {
 
             // insert article
             $ret = $daoArticle->insert([
-                "title"=>"测试". date("Y-m-d H:i:s")
+                "title"=>"测试". date("Y-m-d H:i:s"),
+                "content"=>"测试". date("Y-m-d H:i:s"),
+                "createDT"=>date("Y-m-d H:i:s"),
             ]);
             $this->var_dump_test("insert article", $ret);
 

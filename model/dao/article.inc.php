@@ -13,7 +13,10 @@ class article extends tfdaoSingle{
             "fields"=>[
                 "articleId"=>["type"=>tfdao::FIELD_TYPE_INT],
                 "classId"=>["type"=>tfdao::FIELD_TYPE_INT],
-                "title"=>["type"=>tfdao::FIELD_TYPE_STR,"required"=>true]
+                "title"=>["type"=>tfdao::FIELD_TYPE_STR,"required"=>true],
+                "content"=>["type"=>tfdao::FIELD_TYPE_STR,"required"=>true],
+                "createDT"=>["type"=>tfdao::FIELD_TYPE_STR,"required"=>true],
+                "updateDT"=>["type"=>tfdao::FIELD_TYPE_STR],
             ],
             "constraints"=>[
                 "default"=>["articleId"]

@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><% $title %></title>
+</head>
+<body>
+<div style="margin: 0 auto; width: 1000px;">
+    <h1>TFPHP v0.6.2</h1>
+    <div>
+        <a href="JavaScript:history.back()">back</a>
+    </div>
+    <h2>article list</h2>
+    <div>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>title</th>
+                    <th>create time</th>
+                    <th>update time</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% for $article in $articles %>
+                <tr>
+                    <td><% $article.articleId %></td>
+                    <td><% $article.title %></td>
+                    <td><% $article.createDT %></td>
+                    <td><% $article.updateDT %></td>
+                </tr>
+            <% /for %>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><% $title %></title>
+</head>
+<body>
+<div style="margin: 0 auto; width: 1000px;">
+    <h1>TFPHP v0.6.2</h1>
+    <div>
+        <a href="JavaScript:history.back()">back</a>
+    </div>
+    <h2>article list with pages</h2>
+    <div>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>title</th>
+                    <th>create time</th>
+                    <th>update time</th>
+                </tr>
+            </thead>
+            <tbody>
+            <% if $articles.data %>
+            <% for $article in $articles.data %>
+            <tr>
+                <td><% $article.articleId %></td>
+                <td><% $article.title %></td>
+                <td><% $article.createDT %></td>
+                <td><% $article.updateDT %></td>
+            </tr>
+            <% /for %>
+            <tr>
+                <td colspan="5">
+                    <% if $articles.page.links.first > 0 %><a href="articlesWithPages">first</a><% /if %>
+                    <% if $articles.page.links.previous > 0 %><a href="articlesWithPages?pn=<% $articles.page.links.previous %>">previous</a><% /if %>
+                    <% if $articles.page.links.next > 0 %><a href="articlesWithPages?pn=<% $articles.page.links.next %>">next</a><% /if %>
+                    <% if $articles.page.links.last > 0 %><a href="articlesWithPages?pn=<% $articles.page.links.last %>">last</a><% /if %>
+                </td>
+            </tr>
+            <% else %>
+            <tr>
+                <td colspan="5">
+                    article records are not found
+                </td>
+            </tr>
+            <% /if %>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
