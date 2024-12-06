@@ -7,38 +7,41 @@ use tfphp\framework\tfphp;
 class tfaes{
     protected tfphp $tfphp;
     private string $method;
-    public function __construct(tfphp $tfphp){
-        $this->tfphp = $tfphp;
+    public function __construct(tfphp $A){
+        $this->tfphp = $A;
         $this->method = "AES-256-CBC";
     }
-    public function setMethod(string $method){
-        if(!in_array(strtoupper($method), openssl_get_cipher_methods())){
-            throw new \Exception("invalid method '". $method. "' of aes");
+    public function setMethod(string $F){
+        if(!in_array(strtolower($F), openssl_get_cipher_methods())){
+            throw new \Exception("invalid method '". $F. "' of aes");
         }
-        $this->method = $method;
+        $this->method = $F;
     }
-    public function PKCS7Padding(string $data, int $blockSize): string{
-        $padSize = $blockSize - (strlen($data) % $blockSize);
-        return $data. str_repeat(chr($padSize), $padSize);
+    public function testIVLength(string $F): int{
+        return openssl_cipher_iv_length(strtolower($F));
     }
-    public function encrypt(string $data, string $key, string $iv): string{
-        $key = str_pad($key, 32, '0', STR_PAD_RIGHT);
-        $iv = str_pad($iv, openssl_cipher_iv_length($this->method), '0', STR_PAD_RIGHT);
-        $encrypted = openssl_encrypt($data, $this->method, $key, 0, $iv);
-        if(!$encrypted){
+    public function PKCS7Padding(string $A0, int $A4): string{
+        $A7 = $A4 - (strlen($A0) % $A4);
+        return $A0. str_repeat(chr($A7), $A7);
+    }
+    public function encrypt(string $A0, string $AA, string $AF): string{
+        $AA = str_pad($AA, 32, '0', STR_PAD_RIGHT);
+        $AF = str_pad($AF, openssl_cipher_iv_length($this->method), '0', STR_PAD_RIGHT) ;
+        $B2 = openssl_encrypt($A0, $this->method, $AA, OPENSSL_RAW_DATA, $AF) ;
+        if(!$B2){
             throw new \Exception(openssl_error_string());
         }
-        $encoded = base64_encode($encrypted);
-        return $encoded;
+        $B3 = base64_encode($B2) ;
+        return $B3;
     }
-    public function decrypt(string $encodedData, string $key, string $iv): string{
-        $key = str_pad($key, 32, '0', STR_PAD_RIGHT);
-        $iv = str_pad($iv, openssl_cipher_iv_length($this->method), '0', STR_PAD_RIGHT);
-        $decoded = base64_decode($encodedData);
-        $decrypted = openssl_decrypt($decoded, $this->method, $key, 0, $iv);
-        if(!$decrypted){
+    public function decrypt(string $B7, string $AA, string $AF): string{
+        $AA = str_pad($AA, 32, '0', STR_PAD_RIGHT);
+        $AF = str_pad($AF, openssl_cipher_iv_length($this->method), '0', STR_PAD_RIGHT) ;
+        $BA = base64_decode($B7) ;
+        $C0 = openssl_decrypt($BA, $this->method, $AA, OPENSSL_RAW_DATA, $AF) ;
+        if(!$C0){
             throw new \Exception(openssl_error_string());
         }
-        return $decrypted;
+        return $C0;
     }
 }

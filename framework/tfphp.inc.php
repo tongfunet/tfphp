@@ -15,41 +15,41 @@ class tfphp{
     private array $config;
     private array $dataSources;
     private array $redisObjs;
-    public function __construct($obj){
-        $this->obj = $obj;
+    public function __construct($A){
+        $this->obj = $A;
         $this->request = new tfrequest($this);
         $this->response = new tfresponse($this);
         $this->config = $this->loadConfig();
         $this->dataSources = [];
         $this->redisObjs = [];
     }
-    private function parseConfigXML(&$config){
-        if(isset($config["@attributes"])){
-            $config = array_merge($config, $config["@attributes"]);
-            unset($config["@attributes"]);
+    private function parseConfigXML(&$A7){
+        if(isset($A7["@attributes"])){
+            $A7 = array_merge($A7, $A7["@attributes"]);
+            unset($A7["@attributes"]);
         }
-        if(is_array($config)){
-            foreach ($config as $k => $v){
-                $this->parseConfigXML($config[$k]);
+        if(is_array($A7)){
+            foreach ($A7 as $B6 => $v){
+                $this->parseConfigXML($A7[$B6]);
             }
         }
     }
-    private function parseConfigYAML(&$config){
+    private function parseConfigYAML(&$A7){
 
     }
     private function loadConfig(): array{
-        $configFileNamePath = TFPHP_DOCUMENT_ROOT. "/config/tfphp";
-        if(file_exists($configFileNamePath. ".xml")){
-            $config = simplexml_load_file($configFileNamePath. ".xml");
-            $config = json_encode($config);
-            $config = json_decode($config, true);
-            $this->parseConfigXML($config);
-            return $config;
+        $B8 = TFPHP_DOCUMENT_ROOT. "/config/tfphp";
+        if(file_exists($B8. ".xml")){
+            $A7 = simplexml_load_file($B8. ".xml");
+            $A7 = json_encode($A7) ;
+            $A7 = json_decode($A7, true) ;
+            $this->parseConfigXML($A7);
+            return $A7;
         }
-        else if(file_exists($configFileNamePath. ".yaml")){
-            $config = yaml_parse_file($configFileNamePath. ".yaml");
-            $this->parseConfigYAML($config);
-            return $config;
+        else if(file_exists($B8. ".yaml")){
+            $A7 = yaml_parse_file($B8. ".yaml");
+            $this->parseConfigYAML($A7);
+            return $A7;
         }
         return [];
     }
@@ -62,180 +62,180 @@ class tfphp{
     public function getConfig(): array{
         return $this->config;
     }
-    public function getDataSource(string $name=null): ?tfdo{
-        if(!$name) $name = "default";
-        if(!isset($this->config["database"][$name])){
+    public function getDataSource(string $BA=null): ?tfdo{
+        if(!$BA) $BA = "default";
+        if(!isset($this->config["database"][$BA])){
             return null;
         }
-        if(!isset($this->dataSources[$name])) $this->dataSources[$name] = new tfdo($this, $this->config["database"][$name]);
-        return $this->dataSources[$name];
+        if(!isset($this->dataSources[$BA])) $this->dataSources[$BA] = new tfdo($this, $this->config["database"][$BA]);
+        return $this->dataSources[$BA];
     }
-    public function getRedis(string $name=null): ?tfredis{
-        if(!$name) $name = "default";
-        if(!isset($this->config["redis"][$name])){
+    public function getRedis(string $BA=null): ?tfredis{
+        if(!$BA) $BA = "default";
+        if(!isset($this->config["redis"][$BA])){
             return null;
         }
-        if(!isset($this->redisObjs[$name])) $this->redisObjs[$name] = new tfredis($this, $this->config["redis"][$name]);
-        return $this->redisObjs[$name];
+        if(!isset($this->redisObjs[$BA])) $this->redisObjs[$BA] = new tfredis($this, $this->config["redis"][$BA]);
+        return $this->redisObjs[$BA];
     }
     public function start(){
-        $ru = $_SERVER["REQUEST_URI"];
-        $p = strpos($ru, "?");
-        if($p !== false){
-            $pru = substr($ru, 0, $p);
-            $qs = substr($ru, $p+1);
+        $BF = $_SERVER["REQUEST_URI"];
+        $C0 = strpos($BF, "?") ;
+        if($C0 !== false){
+            $C2 = substr($BF, 0, $C0);
+            $C3 = substr($BF, $C0+1) ;
         }
         else{
-            $pru = $ru;
-            $qs = "";
+            $C2 = $BF;
+            $C3 = "" ;
         }
-        if($qs != ""){
-            $qsArr = explode("&", $qs);
-            foreach ($qsArr as $qsItem){
-                if(($p2 = strpos($qsItem, "=")) !== false) $_GET[substr($qsItem, 0, $p2)] = urldecode(substr($qsItem, $p2+1));
+        if($C3 != ""){
+            $C5 = explode("&", $C3);
+            foreach ($C5 as $qsItem){
+                if(($C6 = strpos($qsItem, "=")) !== false) $_GET[substr($qsItem, 0, $C6)] = urldecode(substr($qsItem, $C6+1));
                 else $_GET[$qsItem] = "";
             }
         }
-        if(strpos($_SERVER["HTTP_CONTENT_TYPE"], "application/json") !== false) $_POST = json_decode(file_get_contents("php://input"), true);
-        if(substr($pru, -1) == "/") $pru .= "index";
-        $extension = "";
-        if(($posExtension = strrpos($pru, ".")) !== false){
-            $extension = strtolower(substr($pru, $posExtension+1));
-            $opru = $pru;
-            $pru = substr($pru, 0, $posExtension);
+        if(strpos($_SERVER["HTTP_CONTENT_TYPE"], "application/json") !== false) $C7 = json_decode(file_get_contents("php://input"), true);
+        if(substr($C2, -1) == "/") $C2 .= "index";
+        $C9 = "";
+        if(($CD = strrpos($C2, ".")) !== false){
+            $C9 = strtolower(substr($C2, $CD+1));
+            $D1 = $C2 ;
+            $C2 = substr($C2, 0, $CD) ;
         }
         if(method_exists($this->obj, "getRERoutes")){
-            $RERoutes = call_user_func([$this->obj, "getRERoutes"]);
-            foreach ($RERoutes as $REURI => $mappingURI){
-                $compiledREURI = preg_replace(["/([\/\-])/", "/\{[^\}]*\}/"], ["\\\\\\1", "([^\/]*)"], $REURI);
-                if(preg_match("/^". $compiledREURI. "$/", $opru, $rg)){
-                    preg_match_all("/\{([^\}]*)\}/", $REURI, $rgs);
+            $D5 = call_user_func([$this->obj, "getRERoutes"]);
+            foreach ($D5 as $D8 => $mappingURI){
+                $DA = preg_replace(["/([\/\-])/", "/\{[^\}]*\}/"], ["\\\\\\1", "([^\/]*)"], $D8);
+                if(preg_match("/^". $DA. "$/", $D1, $rg)){
+                    preg_match_all("/\{([^\}]*)\}/", $D8, $rgs);
                     $_SERVER["PATH_ARGV"] = [];
-                    for($i=1;$i<count($rg);$i++){
-                        $_SERVER["PATH_ARGV"][$rgs[1][$i-1]] = urldecode($rg[$i]);
+                    for($DE=1;$DE<count($rg);$DE++){
+                        $_SERVER["PATH_ARGV"][$rgs[1][$DE-1]] = urldecode($rg[$DE]);
                     }
-                    $pru = $mappingURI;
+                    $C2 = $mappingURI;
                     break;
                 }
             }
         }
         if(method_exists($this->obj, "getStaticRoutes")){
-            $staticRoutes = call_user_func([$this->obj, "getStaticRoutes"]);
-            foreach ($staticRoutes as $staticRoute => $mappingURI){
-                if(strpos($pru, $staticRoute) === 0){
-                    $opru = substr($opru, strlen($staticRoute));
-                    $_SERVER["RESOURCE_NAME"] = TFPHP_DOCUMENT_ROOT. $mappingURI. $opru;
-                    $_SERVER["RESOURCE_FILENAME"] = $mappingURI. $opru;
-                    $pru = "/tfphp/_static";
+            $E3 = call_user_func([$this->obj, "getStaticRoutes"]);
+            foreach ($E3 as $E4 => $mappingURI){
+                if(strpos($C2, $E4) === 0){
+                    $D1 = substr($D1, strlen($E4));
+                    $_SERVER["RESOURCE_NAME"] = TFPHP_DOCUMENT_ROOT. $mappingURI. $D1;
+                    $_SERVER["RESOURCE_FILENAME"] = $mappingURI. $D1;
+                    $C2 = "/tfphp/_static" ;
                     break;
                 }
             }
         }
-        if(substr($pru, 0, 7) == "/tfphp/"){
-            $className = "tfphp\\framework\\controller\\tfphp\\". substr($pru, 7);
-            if(!class_exists($className)){
-                throw new \Exception("class '". $className. "' is not found");
+        if(substr($C2, 0, 7) == "/tfphp/"){
+            $E8 = "tfphp\\framework\\controller\\tfphp\\". substr($C2, 7);
+            if(!class_exists($E8)){
+                throw new \Exception("class '". $E8. "' is not found");
             }
-            $_SERVER["SCRIPT_FILENAME"] = substr(str_replace("\\", "/", $className), 19). ".inc.php";
+            $_SERVER["SCRIPT_FILENAME"] = substr(str_replace("\\", "/", $E8), 19). ".inc.php";
             $_SERVER["SCRIPT_NAME"] = $_SERVER["SCRIPT_FILENAME"];
-            $_SERVER["REQUEST_URI"] = $ru;
-            $_SERVER["PHP_SELF"] = $pru;
+            $_SERVER["REQUEST_URI"] = $BF;
+            $_SERVER["PHP_SELF"] = $C2;
             $_SERVER["DOCUMENT_ROOT"] = TFPHP_DOCUMENT_ROOT;
             $_SERVER["DOCUMENT_URI"] = TFPHP_DOCUMENT_ROOT. $_SERVER["PHP_SELF"];
-            $_SERVER["RESOURCE_EXTENSION"] = $extension;
-            $class = new \ReflectionClass($className);
-            $parentClassName = $class->getParentClass()->getName();
-            $parentClassBaseName = substr($parentClassName, 23);
-            if(!in_array($parentClassBaseName, ["tfpage", "tfapi", "tfrestfulAPI"])){
-                throw new \Exception("class '". $className. "' is invalid");
+            $_SERVER["RESOURCE_EXTENSION"] = $C9;
+            $EC = new \ReflectionClass($E8) ;
+            $EF = $EC->getParentClass()->getName() ;
+            $F3 = substr($EF, 23) ;
+            if(!in_array($F3, ["tfpage", "tfapi", "tfrestfulAPI"])){
+                throw new \Exception("class '". $E8. "' is invalid");
             }
-            $classInstance = $class->newInstanceArgs([$this]);
-            $classInstance->load();
+            $F5 = $EC->newInstanceArgs([$this]) ;
+            $F5->load();
             return;
         }
-        $classNames = [];
-        $resName = $resValue = $resFunction = $resExtension = "";
-        $classIsFound = false;
-        $isRestfulMode = false;
-        if(!$classIsFound){
-            $className = "tfphp\\controller". str_replace("/", "\\", $pru);
-            $classNames[] = $className;
-            if(class_exists($className)){
-                $classIsFound = true;
+        $F6 = [] ;
+        $F9 = $FD = $A01 = $A04 = "" ;
+        $A05 = false ;
+        $A07 = false ;
+        if(!$A05){
+            $E8 = "tfphp\\controller". str_replace("/", "\\", $C2);
+            $F6[] = $E8;
+            if(class_exists($E8)){
+                $A05 = true;
             }
         }
-        if(!$classIsFound && basename($pru)[0] == '_'){
-            $resFunction = substr(basename($pru), 1);
-            $pru = dirname($pru);
-            $className = "tfphp\\controller". str_replace("/", "\\", $pru);
-            $classNames[] = $className;
-            if(class_exists($className)){
-                $classIsFound = true;
-                $isRestfulMode = true;
+        if(!$A05 && basename($C2)[0] == '_'){
+            $A01 = substr(basename($C2), 1);
+            $C2 = dirname($C2) ;
+            $E8 = "tfphp\\controller". str_replace("/", "\\", $C2) ;
+            $F6[] = $E8;
+            if(class_exists($E8)){
+                $A05 = true;
+                $A07 = true ;
             }
         }
-        if(!$classIsFound){
-            $resValue = basename($pru);
-            $pru = dirname($pru);
-            $resName = basename($pru);
-            $className = "tfphp\\controller". str_replace("/", "\\", $pru);
-            $classNames[] = $className;
-            if(class_exists($className)){
-                $classIsFound = true;
-                $isRestfulMode = true;
+        if(!$A05){
+            $FD = basename($C2);
+            $C2 = dirname($C2) ;
+            $F9 = basename($C2) ;
+            $E8 = "tfphp\\controller". str_replace("/", "\\", $C2) ;
+            $F6[] = $E8;
+            if(class_exists($E8)){
+                $A05 = true;
+                $A07 = true ;
             }
         }
-        if(!$classIsFound){
-            throw new \Exception("class '". implode("', '", $classNames). "' are not found");
+        if(!$A05){
+            throw new \Exception("class '". implode("', '", $F6). "' are not found");
         }
-        $_SERVER["SCRIPT_FILENAME"] = substr(str_replace("\\", "/", $className), 16). ".inc.php";
+        $_SERVER["SCRIPT_FILENAME"] = substr(str_replace("\\", "/", $E8), 16). ".inc.php";
         $_SERVER["SCRIPT_NAME"] = $_SERVER["SCRIPT_FILENAME"];
-        $_SERVER["REQUEST_URI"] = $ru;
-        $_SERVER["PHP_SELF"] = $pru;
+        $_SERVER["REQUEST_URI"] = $BF;
+        $_SERVER["PHP_SELF"] = $C2;
         $_SERVER["DOCUMENT_ROOT"] = TFPHP_DOCUMENT_ROOT;
         $_SERVER["DOCUMENT_URI"] = TFPHP_DOCUMENT_ROOT. $_SERVER["PHP_SELF"];
-        $_SERVER["RESOURCE_EXTENSION"] = $extension;
-        $class = new \ReflectionClass($className);
-        $parentClassName = $class->getParentClass()->getName();
-        $parentClassBaseName = substr($parentClassName, 23);
-        if(!$isRestfulMode){
-            if(!in_array($parentClassBaseName, ["tfpage", "tfapi", "tfrestfulAPI"])){
-                throw new \Exception("class '". $className. "' is invalid");
+        $_SERVER["RESOURCE_EXTENSION"] = $C9;
+        $EC = new \ReflectionClass($E8) ;
+        $EF = $EC->getParentClass()->getName() ;
+        $F3 = substr($EF, 23) ;
+        if(!$A07){
+            if(!in_array($F3, ["tfpage", "tfapi", "tfrestfulAPI"])){
+                throw new \Exception("class '". $E8. "' is invalid");
             }
         }
         else{
-            if(!in_array($parentClassBaseName, ["tfrestfulAPI"])){
-                throw new \Exception("class '". $className. "' is invalid");
+            if(!in_array($F3, ["tfrestfulAPI"])){
+                throw new \Exception("class '". $E8. "' is invalid");
             }
-            if($resName == "") $resName = basename($pru);
-            $_SERVER["RESTFUL_RESOURCE_NAME"] = $resName;
-            $_SERVER["RESTFUL_RESOURCE_VALUE"] = $resValue;
-            $_SERVER["RESTFUL_RESOURCE_FUNCTION"] = $resFunction;
+            if($F9 == "") $F9 = basename($C2);
+            $_SERVER["RESTFUL_RESOURCE_NAME"] = $F9;
+            $_SERVER["RESTFUL_RESOURCE_VALUE"] = $FD;
+            $_SERVER["RESTFUL_RESOURCE_FUNCTION"] = $A01;
         }
-        $classInstance = $class->newInstanceArgs([$this]);
-        $classInstance->load();
+        $F5 = $EC->newInstanceArgs([$this]) ;
+        $F5->load();
         return;
     }
-    public static function run(string $class){
-        (new tfphp((new \ReflectionClass($class))->newInstance()))->start();
+    public static function run(string $EC){
+        (new tfphp((new \ReflectionClass($EC))->newInstance()))->start();
     }
 }
-function tfphpAutoload($class){
-    $className = str_replace("\\", "/", substr($class, 16));
-    $classFilepath = TFPHP_ROOT. "/". $className. ".inc.php";
-    if(!file_exists($classFilepath)){
+function tfphpAutoload($EC){
+    $E8 = str_replace("\\", "/", substr($EC, 16));
+    $A0D = TFPHP_ROOT. "/". $E8. ".inc.php" ;
+    if(!file_exists($A0D)){
         return false;
     }
-    include_once $classFilepath;
+    include_once $A0D;
     return true;
 }
-function tfprojectAutoload($class){
-    $className = str_replace("\\", "/", substr($class, 6));
-    $classFilepath = TFPHP_DOCUMENT_ROOT. "/". $className. ".inc.php";
-    if(!file_exists($classFilepath)){
+function tfprojectAutoload($EC){
+    $E8 = str_replace("\\", "/", substr($EC, 6));
+    $A0D = TFPHP_DOCUMENT_ROOT. "/". $E8. ".inc.php" ;
+    if(!file_exists($A0D)){
         return false;
     }
-    include_once $classFilepath;
+    include_once $A0D;
     return true;
 }
 spl_autoload_register("tfphp\\framework\\tfphpAutoload");

@@ -1,4 +1,4 @@
-<h1 align="center">TFPHP v0.6.2</h1>
+<h1 align="center">TFPHP v0.6.5</h1>
 
 # TFPHP
 

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title><% $title %></title>
+    <% resource js="js/jquery.min.js" %>
+    <% resource js="js/tfhtml.min.js" %>
+    <% resource js="js/tffastCRUD.js" %>
+    <% resource css="/css/tfhtml.css" %>
+    <style type="text/css">
+        .pagination{
+            list-style: none;
+        }
+        .pagination li{
+            float: left;
+            margin: 0 8px 0 0;
+        }
+        .pagination li a{
+            cursor: pointer;
+            text-decoration: underline;
+        }
+        .dialog{
+            display: none;
+            background: white;
+        }
+        .dialog .title{
+            border-bottom: 1px solid #ccc;
+            text-align: center;
+        }
+        .dialog .title i{
+            float: right;
+            font-style: normal;
+        }
+    </style>
+</head>
+<body>
+<div style="margin: 0 auto; width: 1000px;">
+    <h1>TFPHP v0.6.5</h1>
+    <div>
+        <a href="JavaScript:history.back()">back</a>
+    </div>
+    <h2>user CRUD operations</h2>
+    <div class="user">
+        <a href="JavaScript:void(0)" data-action="add">new</a>
+        <table border="1">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>name</th>
+                    <th>state</th>
+                    <th>nick name</th>
+                    <th>gender</th>
+                    <th>birth</th>
+                    <th>create time</th>
+                    <th>update time</th>
+                    <th> </th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination"></div>
+    </div>
+    <div class="dialog form-add">
+        <form method="post">
+            <div class="title">add user<i data-dialog-button="close">X</i></div>
+            <table>
+                <tr><td>user name</td><td><input type="text" name="userName"></td></tr>
+                <tr><td>password</td><td><input type="password" name="userPwd"></td></tr>
+                <tr><td>nick name</td><td><input type="text" name="nickName"></td></tr>
+                <tr><td> </td><td><button>Submit</button></td></tr>
+            </table>
+        </form>
+    </div>
+    <div class="dialog form-enable">
+        <form method="post">
+            <div class="title">enable user<i data-dialog-button="close">X</i></div>
+            <table>
+                <tr><td>user name</td><td><input type="text" name="userName" readonly="readonly"></td></tr>
+                <tr><td> </td><td><button>Enable</button></td></tr>
+            </table>
+        </form>
+    </div>
+    <div class="dialog form-disable">
+        <form method="post">
+            <div class="title">disable user<i data-dialog-button="close">X</i></div>
+            <table>
+                <tr><td>user name</td><td><input type="text" name="userName" readonly="readonly"></td></tr>
+                <tr><td> </td><td><button>Disable</button></td></tr>
+            </table>
+        </form>
+    </div>
+    <div class="dialog form-modify">
+        <form method="post">
+            <div class="title">modify user<i data-dialog-button="close">X</i></div>
+            <table>
+                <tr><td>user name</td><td><input type="text" name="userName"></td></tr>
+                <tr><td>password</td><td><input type="password" name="userPwd"></td></tr>
+                <tr><td>nick name</td><td><input type="text" name="nickName"></td></tr>
+                <tr><td> </td><td><button>Update</button></td></tr>
+            </table>
+        </form>
+    </div>
+    <div class="dialog form-remove">
+        <form method="post">
+            <div class="title">remove user<i data-dialog-button="close">X</i></div>
+            <table>
+                <tr><td>user name</td><td><input type="text" name="userName" readonly="readonly"></td></tr>
+                <tr><td> </td><td><button>Delete</button></td></tr>
+            </table>
+        </form>
+    </div>
+</div>
+</body>
+</html>
+
+<script type="text/javascript">
+    var o = $(".user"), my = new tffastCRUD.init(o, {
+        apiPrefix: "api/userCRUD",
+        makeRowData : function(rowData){
+            rowData.__opers__ = [(rowData.state) ? "<a href=\"JavaScript:void(0)\" class=\"btn btn-tn btn-white\" data-row-id=\"" + rowData.userId + "\" data-row-action=\"disable\">disable</a> " : "<a href=\"JavaScript:void(0)\" class=\"btn btn-tn btn-white\" data-row-id=\"" + rowData.userId + "\" data-row-action=\"enable\">enable</a> ",
+                "<a href=\"JavaScript:void(0)\" class=\"btn btn-tn btn-white\" data-row-id=\"" + rowData.userId + "\" data-row-action=\"modify\">edit</a> ",
+                "<a href=\"JavaScript:void(0)\" class=\"btn btn-tn btn-white\" data-row-id=\"" + rowData.userId + "\" data-row-action=\"remove\">delete</a>"].join(" ");
+            return rowData;
+        }
+    });
+    my.doAction_add = function(params){
+        this.dialogForm("add", {
+            validateRules: [
+                {name: "userName", type: "empty", errmsg: "name is required"},
+                {name: "userPwd", type: "empty", errmsg: "name is required"}
+            ]
+        }, params);
+    };
+    my.doRowAction_modify = function(id, params){
+        this.dialogFormWithID("modify", {
+            validateRules: [
+                {name: "userName", type: "empty", errmsg: "name is required"},
+                {name: "userPwd", type: "empty", errmsg: "name is required"}
+            ]
+        }, id, params);
+    };
+</script>

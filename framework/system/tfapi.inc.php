@@ -7,20 +7,20 @@ use tfphp\framework\tfphp;
 
 class tfapi {
     protected tfphp $tfphp;
-    public function __construct(tfphp $tfphp){
-        $this->tfphp = $tfphp;
+    public function __construct(tfphp $A){
+        $this->tfphp = $A;
     }
-    protected function responseJsonData($data, $dataCharset=null){
-        $this->tfphp->getResponse()->responseJsonData($data, $dataCharset);
+    protected function responseJsonData($A3, $A4=null){
+        $this->tfphp->getResponse()->responseJsonData($A3, $A4);
     }
-    protected function responseHtmlData($data, string $dataCharset=null){
-        $this->tfphp->getResponse()->responseHtmlData($data, $dataCharset);
+    protected function responseHtmlData($A3, string $A4=null){
+        $this->tfphp->getResponse()->responseHtmlData($A3, $A4);
     }
-    protected function responsePlaintextData($data, string $dataCharset=null){
-        $this->tfphp->getResponse()->responsePlaintextData($data, $dataCharset);
+    protected function responsePlaintextData($A3, string $A4=null){
+        $this->tfphp->getResponse()->responsePlaintextData($A3, $A4);
     }
-    protected function location(string $url){
-        $this->tfphp->getResponse()->location($url);
+    protected function location(string $A6){
+        $this->tfphp->getResponse()->location($A6);
     }
     protected function onLoad(){
 

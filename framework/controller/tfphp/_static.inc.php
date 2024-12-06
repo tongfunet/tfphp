@@ -4,54 +4,54 @@ namespace tfphp\framework\controller\tfphp;
 
 use tfphp\framework\system\tfapi;
 
-class _static extends tfapi {
+class _static extends tfapi{
     protected function onLoad(){
-        $resp = $this->tfphp->getResponse();
-        $filepath = $_SERVER["RESOURCE_NAME"];
-        $extension = $_SERVER["RESOURCE_EXTENSION"];
-        $mimeType = "";
-        switch ($extension){
+        $A = $this->tfphp->getResponse();
+        $A3 = $_SERVER["RESOURCE_NAME"] ;
+        $A7 = $_SERVER["RESOURCE_EXTENSION"] ;
+        $AA = "" ;
+        switch ($A7){
             case "css":
-                $mimeType = "text/css";
+                $AA = "text/css";
                 break;
             case "js":
-                $mimeType = "text/javascript";
+                $AA = "text/javascript" ;
                 break;
             case "json":
-                $mimeType = "application/json";
+                $AA = "application/json" ;
                 break;
             case "xml":
-                $mimeType = "text/xml";
+                $AA = "text/xml" ;
                 break;
             case "jpg":
             case "jpeg":
-                $mimeType = "image/jpeg";
+                $AA = "image/jpeg" ;
                 break;
             case "png":
-                $mimeType = "image/png";
+                $AA = "image/png" ;
                 break;
             case "gif":
-                $mimeType = "image/gif";
+                $AA = "image/gif" ;
                 break;
             case "txt":
-                $mimeType = "text/plaintext";
+                $AA = "text/plaintext" ;
                 break;
             case "ico":
-                $mimeType = "image/x-icon";
+                $AA = "image/x-icon" ;
                 break;
         }
-        if(!file_exists($filepath)){
-            $resp->setStatusCode(404);
-            $resp->response();
+        if(!file_exists($A3)){
+            $A->setStatusCode(404);
+            $A->response();
         }
-        else if(!$mimeType){
-            $resp->setStatusCode(403);
-            $resp->response();
+        else if(!$AA){
+            $A->setStatusCode(403);
+            $A->response();
         }
         else{
             header("HTTP/1.1 200 OK");
-            header("Content-Type: ". $mimeType);
-            echo file_get_contents($filepath);
+            header("Content-Type: ". $AA);
+            echo file_get_contents($A3);
         }
     }
 }

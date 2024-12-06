@@ -8,12 +8,12 @@ use tfphp\framework\view\tfview;
 class tfpage {
     protected tfphp $tfphp;
     protected tfview $view;
-    public function __construct(tfphp $tfphp){
-        $this->tfphp = $tfphp;
-        $this->view = new tfview($tfphp);
+    public function __construct(tfphp $A){
+        $this->tfphp = $A;
+        $this->view = new tfview($A);
     }
-    public function location(string $url){
-        $this->tfphp->getResponse()->location($url);
+    public function location(string $A3){
+        $this->tfphp->getResponse()->location($A3);
     }
     protected function onLoad(){
 

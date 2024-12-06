@@ -9,9 +9,9 @@ class tfdo{
     private array $params;
     private bool $ready;
     private \PDO $pdo;
-    public function __construct(tfphp $tfphp, array $params){
-        $this->tfphp = $tfphp;
-        $this->params = $params;
+    public function __construct(tfphp $A, array $F){
+        $this->tfphp = $A;
+        $this->params = $F;
         $this->ready = false;
     }
     private function readyTest(){
@@ -25,8 +25,8 @@ class tfdo{
                     if(!$this->params["username"]) $this->params["username"] = "root";
                     if(!$this->params["password"]) $this->params["password"] = "";
                     if(!$this->params["charset"]) $this->params["charset"] = "utf8mb4";
-                    $dsn = "mysql:host=". $this->params["host"]. ";port=". $this->params["port"]. ";dbname=". $this->params["database"]. ";charset=". $this->params["charset"];
-                    $this->pdo = new \PDO($dsn, $this->params["username"], $this->params["password"]);
+                    $A9 = "mysql:host=". $this->params["host"]. ";port=". $this->params["port"]. ";dbname=". $this->params["database"]. ";charset=". $this->params["charset"];
+                    $this->pdo = new \PDO($A9, $this->params["username"], $this->params["password"]);
                     $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
                     $this->pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
                     $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
@@ -34,62 +34,62 @@ class tfdo{
             }
         }
     }
-    private function query(string $sql, array $params): \PDOStatement{
+    private function query(string $AD, array $F): \PDOStatement{
         $this->readyTest();
-        $stmt = $this->pdo->prepare($sql);
-        foreach ($params as $param){
-            $stmt->bindParam($param["name"], $param["value"], $param["type"]);
+        $B1 = $this->pdo->prepare($AD);
+        foreach ($F as $param){
+            $B1->bindParam($param["name"], $param["value"], $param["type"]);
         }
-        $stmt->execute();
-        return $stmt;
+        $B1->execute();
+        return $B1;
     }
-    private function query2(string $sql, array $params): \PDOStatement{
+    private function query2(string $AD, array $F): \PDOStatement{
         $this->readyTest();
-        $paramsCount = count($params);
-        $i = 0;
-        $newParams = [];
-        while(preg_match("/\?/", $sql, $rg, PREG_OFFSET_CAPTURE)){
-            if(($i+1) > $paramsCount){
-                throw new \Exception("too few arguments, ". strval($i+1). " are needed and ". strval($paramsCount). " are given");
+        $B2 = count($F);
+        $B3 = 0 ;
+        $B4 = [] ;
+        while(preg_match("/\?/", $AD, $rg, PREG_OFFSET_CAPTURE)){
+            if(($B3+1) > $B2){
+                throw new \Exception("too few arguments, ". strval($B3+1). " are needed and ". strval($B2). " are given");
             }
-            $name = ":f". strval($i);
-            $sql = substr($sql, 0, $rg[0][1]). $name. substr($sql, $rg[0][1]+strlen($rg[0][0]));
-            $newParams[] = [
-                "name"=>$name,
+            $B7 = ":f". strval($B3);
+            $AD = substr($AD, 0, $rg[0][1]). $B7. substr($AD, $rg[0][1]+strlen($rg[0][0])) ;
+            $B4[] = [
+                "name"=>$B7,
                 "type"=>\PDO::PARAM_STR,
-                "value"=>$params[$i]
+                "value"=>$F[$B3]
             ];
-            $i ++;
+            $B3 ++;
         }
-        if($i < $paramsCount){
-            throw new \Exception("too many arguments, ". strval($i). " are needed and ". strval($paramsCount). " are given");
+        if($B3 < $B2){
+            throw new \Exception("too many arguments, ". strval($B3). " are needed and ". strval($B2). " are given");
         }
-        return $this->query($sql, $newParams);
+        return $this->query($AD, $B4);
     }
-    private function query3(string $sql, array $params): \PDOStatement{
+    private function query3(string $AD, array $F): \PDOStatement{
         $this->readyTest();
-        $paramsCount = count($params);
-        $i = 0;
-        $newParams = [];
-        while(preg_match("/\@(int|str)/", $sql, $rg, PREG_OFFSET_CAPTURE)){
-            if(($i+1) > $paramsCount){
-                throw new \Exception("too few arguments, ". strval($i+1). " are needed and ". strval($paramsCount). " are given");
+        $B2 = count($F);
+        $B3 = 0 ;
+        $B4 = [] ;
+        while(preg_match("/\@(int|str)/", $AD, $rg, PREG_OFFSET_CAPTURE)){
+            if(($B3+1) > $B2){
+                throw new \Exception("too few arguments, ". strval($B3+1). " are needed and ". strval($B2). " are given");
             }
-            $name = ":f". strval($i);
-            if($rg[1][0] == "int") $type = \PDO::PARAM_INT;
-            else $type = \PDO::PARAM_STR;
-            $sql = substr($sql, 0, $rg[0][1]). $name. substr($sql, $rg[0][1]+strlen($rg[0][0]));
-            $newParams[] = [
-                "name"=>$name,
-                "type"=>$type,
-                "value"=>$params[$i]
+            $B7 = ":f". strval($B3);
+            if($rg[1][0] == "int") $B9 = \PDO::PARAM_INT;
+            else $B9 = \PDO::PARAM_STR;
+            $AD = substr($AD, 0, $rg[0][1]). $B7. substr($AD, $rg[0][1]+strlen($rg[0][0])) ;
+            $B4[] = [
+                "name"=>$B7,
+                "type"=>$B9,
+                "value"=>$F[$B3]
             ];
-            $i ++;
+            $B3 ++;
         }
-        if($i < $paramsCount){
-            throw new \Exception("too many arguments, ". strval($i). " are needed and ". strval($paramsCount). " are given");
+        if($B3 < $B2){
+            throw new \Exception("too many arguments, ". strval($B3). " are needed and ". strval($B2). " are given");
         }
-        return $this->query($sql, $newParams);
+        return $this->query($AD, $B4);
     }
     public function beginTransaction(): bool{
         $this->readyTest();
@@ -103,118 +103,118 @@ class tfdo{
         $this->readyTest();
         return $this->pdo->rollBack();
     }
-    public function execute(string $sql, array $params): bool{
-        $this->query($sql, $params);
+    public function execute(string $AD, array $F): bool{
+        $this->query($AD, $F);
         return true;
     }
-    public function execute2(string $sql, array $params): bool{
-        $this->query2($sql, $params);
+    public function execute2(string $AD, array $F): bool{
+        $this->query2($AD, $F);
         return true;
     }
-    public function execute3(string $sql, array $params): bool{
-        $this->query3($sql, $params);
+    public function execute3(string $AD, array $F): bool{
+        $this->query3($AD, $F);
         return true;
     }
-    public function fetchOne(string $sql, array $params): ?array{
-        $stmt = $this->query($sql, $params);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if($row === false){
+    public function fetchOne(string $AD, array $F): ?array{
+        $B1 = $this->query($AD, $F);
+        $BD = $B1->fetch(\PDO::FETCH_ASSOC) ;
+        if($BD === false){
             return null;
         }
-        return $row;
+        return $BD;
     }
-    public function fetchOne2(string $sql, array $params): ?array{
-        $stmt = $this->query2($sql, $params);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if($row === false){
+    public function fetchOne2(string $AD, array $F): ?array{
+        $B1 = $this->query2($AD, $F);
+        $BD = $B1->fetch(\PDO::FETCH_ASSOC) ;
+        if($BD === false){
             return null;
         }
-        return $row;
+        return $BD;
     }
-    public function fetchOne3(string $sql, array $params): ?array{
-        $stmt = $this->query3($sql, $params);
-        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        if($row === false){
+    public function fetchOne3(string $AD, array $F): ?array{
+        $B1 = $this->query3($AD, $F);
+        $BD = $B1->fetch(\PDO::FETCH_ASSOC) ;
+        if($BD === false){
             return null;
         }
-        return $row;
+        return $BD;
     }
-    public function fetchMany(string $sql, array $params, int $seekBegin, int $fetchNums): ?array{
+    public function fetchMany(string $AD, array $F, int $C1, int $C4): ?array{
         switch ($this->params["driver"]){
             default:
-                $sql .= " LIMIT ". strval($seekBegin). ",". strval($fetchNums);
+                $AD .= " LIMIT ". strval($C1). ",". strval($C4);
         }
-        $stmt = $this->query($sql, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if($rows === false || count($rows) == 0){
+        $B1 = $this->query($AD, $F);
+        $C9 = $B1->fetchAll(\PDO::FETCH_ASSOC) ;
+        if($C9 === false || count($C9) == 0){
             return null;
         }
-        return $rows;
+        return $C9;
     }
-    public function fetchMany2(string $sql, array $params, int $seekBegin, int $fetchNums): ?array{
+    public function fetchMany2(string $AD, array $F, int $C1, int $C4): ?array{
         switch ($this->params["driver"]){
             default:
-                $sql .= " LIMIT ". strval($seekBegin). ",". strval($fetchNums);
+                $AD .= " LIMIT ". strval($C1). ",". strval($C4);
         }
-        $stmt = $this->query2($sql, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if($rows === false || count($rows) == 0){
+        $B1 = $this->query2($AD, $F);
+        $C9 = $B1->fetchAll(\PDO::FETCH_ASSOC) ;
+        if($C9 === false || count($C9) == 0){
             return null;
         }
-        return $rows;
+        return $C9;
     }
-    public function fetchMany3(string $sql, array $params, int $seekBegin, int $fetchNums): ?array{
+    public function fetchMany3(string $AD, array $F, int $C1, int $C4): ?array{
         switch ($this->params["driver"]){
             default:
-                $sql .= " LIMIT ". strval($seekBegin). ",". strval($fetchNums);
+                $AD .= " LIMIT ". strval($C1). ",". strval($C4);
         }
-        $stmt = $this->query3($sql, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if($rows === false || count($rows) == 0){
+        $B1 = $this->query3($AD, $F);
+        $C9 = $B1->fetchAll(\PDO::FETCH_ASSOC) ;
+        if($C9 === false || count($C9) == 0){
             return null;
         }
-        return $rows;
+        return $C9;
     }
-    public function fetchAll(string $sql, array $params): ?array{
-        $stmt = $this->query($sql, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if($rows === false || count($rows) == 0){
+    public function fetchAll(string $AD, array $F): ?array{
+        $B1 = $this->query($AD, $F);
+        $C9 = $B1->fetchAll(\PDO::FETCH_ASSOC) ;
+        if($C9 === false || count($C9) == 0){
             return null;
         }
-        return $rows;
+        return $C9;
     }
-    public function fetchAll2(string $sql, array $params): ?array{
-        $stmt = $this->query2($sql, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if($rows === false || count($rows) == 0){
+    public function fetchAll2(string $AD, array $F): ?array{
+        $B1 = $this->query2($AD, $F);
+        $C9 = $B1->fetchAll(\PDO::FETCH_ASSOC) ;
+        if($C9 === false || count($C9) == 0){
             return null;
         }
-        return $rows;
+        return $C9;
     }
-    public function fetchAll3(string $sql, array $params): ?array{
-        $stmt = $this->query3($sql, $params);
-        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-        if($rows === false || count($rows) == 0){
+    public function fetchAll3(string $AD, array $F): ?array{
+        $B1 = $this->query3($AD, $F);
+        $C9 = $B1->fetchAll(\PDO::FETCH_ASSOC) ;
+        if($C9 === false || count($C9) == 0){
             return null;
         }
-        return $rows;
+        return $C9;
     }
-    public function makePagination(int $total, int $percentpage, int $currentpage): array{
-        $totalpage = ceil($total/$percentpage);
-        if($currentpage > $totalpage) $currentpage = $totalpage;
-        if($currentpage < 1) $currentpage = 1;
-        $links = [
-            "first"=>(($totalpage > 0 && $currentpage != 1) ? 1 : 0),
-            "previous"=>(($totalpage > 0 && $currentpage > 1) ? $currentpage-1 : 0),
-            "next"=>(($totalpage > 0 && $currentpage < $totalpage) ? $currentpage+1 : 0),
-            "last"=>(($totalpage > 0 && $currentpage != $totalpage) ? $totalpage : 0),
-        ];
+    public function makePagination(int $CC, int $CD, int $D1): array{
+        $D2 = ceil($CC/$CD);
+        if($D1 > $D2) $D1 = $D2;
+        if($D1 < 1) $D1 = 1;
+        $D4 = [
+            "first"=>(($D2 > 0 && $D1 != 1) ?1 : 0),
+            "previous"=>(($D2 > 0 && $D1 > 1) ? $D1-1 : 0),
+            "next"=>(($D2 > 0 && $D1 < $D2) ? $D1+1 : 0),
+            "last"=>(($D2 > 0 && $D1 != $D2) ? $D2 : 0),
+        ] ;
         return [
-            "total"=>$total,
-            "percentpage"=>$percentpage,
-            "totalpage"=>$totalpage,
-            "currentpage"=>$currentpage,
-            "links"=>$links,
+            "total"=>$CC,
+            "percentpage"=>$CD,
+            "totalpage"=>$D2,
+            "currentpage"=>$D1,
+            "links"=>$D4,
         ];
     }
     public function getPDO(): \PDO{

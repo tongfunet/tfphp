@@ -6,7 +6,7 @@ use tfphp\framework\tfphp;
 
 class tfrequest{
     protected tfphp $tfphp;
-    public function __construct(tfphp $tfphp){
-        $this->tfphp = $tfphp;
+    public function __construct(tfphp $A){
+        $this->tfphp = $A;
     }
 }

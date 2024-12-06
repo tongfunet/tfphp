@@ -41,7 +41,22 @@
 * [v0.6.2] Added the fillColor method to the tfimage class to fill the image with color.
 * [v0.6.2] Added the write Text method to the tfimage class to add text to the image.
 * [v0.6.2] Added class tfAES for encryption and decryption of AES algorithm.
-* [v0.6.2] Added a "resource" template tag to the tfview class to load script files, style sheet files, and so on.
+* [v0.6.2] Added a 'resource' template tag to the tfview class to load script files, style sheet files, and so on.
 * [v0.6.2] Added class tfredis for implementing various operations on Redis databases.
+
+## [v0.6.3] - 2024/10/28
+
 * [v0.6.2] Added the addWatermark method to the tfimage class to add watermarks to the image.
 * [v0.6.2] Added getObject/setObject/export/delete methods to the tfredis class for manipulating structured data.
+* [v0.6.3] Added constraint mode to the class 'tfdaoSingle', which greatly simplifies the function parameter format.
+* [v0.6.3] Added constraint mode to the class 'tfdaoOneToOne', which greatly simplifies the function parameter format.
+* [v0.6.3] Added constraint mode to the class 'tfdaoManyToMany', which greatly simplifies the function parameter format.
+* [v0.6.3] Added class 'tfdaoBuilder' to create dao objects for data tables.
+* [v0.6.3] Removed the built-in tool 'build_base_models_by_datasource' from 'tfphp' and used the class 'tfdaoBuilder' to dynamically create dao objects for data tables.
+* [v0.6.3] The method 'getDAOSingle' of class 'tfmodel' has added a simplified method 'getSG', method 'getDAOOneToOne' has added a simplified method 'getO2O', and method 'getDAOManyToMany' has added a simplified method 'getM2M'.
+
+## [v0.6.5] - 2024/10/29
+
+* [v0.6.5] Modified the initialization method of the class 'tfmodel' for DAO objects, adding three methods: 'setDAOOneToOne', 'setDAOOneToMan', 'setDAOManyToMan' to initialize composite DAO objects. Independent DAO objects do not require explicit initialization.
+* [v0.6.5] Modified the method 'onLoad' of the class 'tfrestfulAPI' to support custom methods such as 'on[REQUEST_METHOD]','on[RESOURCE_FUNCTION]','on[REQUEST_METHOD]_[RESOURCE_FUNCTION]'.
+* [v0.6.5] Added the method 'centerCrop' of class 'tfimage' to crop images of different sizes.

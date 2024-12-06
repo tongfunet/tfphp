@@ -5,7 +5,7 @@
 </head>
 <body>
 <div style="margin: 0 auto; width: 1000px;">
-    <h1>TFPHP v0.6.2</h1>
+    <h1>TFPHP v0.6.5</h1>
     <div>
         <a href="JavaScript:history.back()">back</a>
     </div>
@@ -17,6 +17,9 @@
                     <th>ID</th>
                     <th>name</th>
                     <th>state</th>
+                    <th>nick name</th>
+                    <th>gender</th>
+                    <th>birth</th>
                     <th>create time</th>
                     <th>update time</th>
                 </tr>
@@ -28,21 +31,25 @@
                     <td><% $user.userId %></td>
                     <td><% $user.userName %></td>
                     <td><% $user.state %></td>
+                    <td><% $user.nickName %></td>
+                    <td><% $user.gender %></td>
+                    <td><% $user.birth %></td>
                     <td><% $user.createDT %></td>
                     <td><% $user.updateDT %></td>
                 </tr>
             <% /for %>
             <tr>
-                <td colspan="5">
+                <td colspan="8">
                     <% if $users.page.links.first > 0 %><a href="usersWithPages">first</a><% /if %>
                     <% if $users.page.links.previous > 0 %><a href="usersWithPages?pn=<% $users.page.links.previous %>">previous</a><% /if %>
                     <% if $users.page.links.next > 0 %><a href="usersWithPages?pn=<% $users.page.links.next %>">next</a><% /if %>
                     <% if $users.page.links.last > 0 %><a href="usersWithPages?pn=<% $users.page.links.last %>">last</a><% /if %>
+                    <span><% $users.page.total %> - <% $users.page.currentpage %>/<% $users.page.totalpage %></span>
                 </td>
             </tr>
             <% else %>
             <tr>
-                <td colspan="5">
+                <td colspan="8">
                     user records are not found
                 </td>
             </tr>

@@ -9,9 +9,9 @@ class tfredis{
     private array $params;
     private bool $ready;
     private \Redis $redis;
-    public function __construct(tfphp $tfphp, array $params){
-        $this->tfphp = $tfphp;
-        $this->params = $params;
+    public function __construct(tfphp $A, array $A0){
+        $this->tfphp = $A;
+        $this->params = $A0;
         $this->ready = false;
     }
     private function readyTest(){
@@ -26,42 +26,42 @@ class tfredis{
             $this->redis->auth($this->params["password"]);
         }
     }
-    public function setObject(string $key, $value): bool{
+    public function setObject(string $AA, $AE): bool{
         $this->readyTest();
-        $value = serialize($value);
-        if($value === false){
+        $AE = serialize($AE);
+        if($AE === false){
             return false;
         }
-        $ret = $this->redis->set($key, $value);
-        if($ret === false){
+        $B3 = $this->redis->set($AA, $AE) ;
+        if($B3 === false){
             return false;
         }
         return true;
     }
-    public function getObject(string $key){
+    public function getObject(string $AA){
         $this->readyTest();
-        $value = $this->redis->get($key);
-        if($value === false){
+        $AE = $this->redis->get($AA);
+        if($AE === false){
             return false;
         }
-        $value = unserialize($value);
-        if($value === false){
+        $AE = unserialize($AE) ;
+        if($AE === false){
             return false;
         }
-        return $value;
+        return $AE;
     }
-    public function expire(string $key, int $expires): bool{
+    public function expire(string $AA, int $B8): bool{
         $this->readyTest();
-        $ret = $this->redis->expire($key, $expires);
-        if($ret === false){
+        $B3 = $this->redis->expire($AA, $B8);
+        if($B3 === false){
             return false;
         }
         return true;
     }
-    public function delete(string $key): bool{
+    public function delete(string $AA): bool{
         $this->readyTest();
-        $ret = $this->redis->del($key);
-        if(!$ret){
+        $B3 = $this->redis->del($AA);
+        if(!$B3){
             return false;
         }
         return true;
