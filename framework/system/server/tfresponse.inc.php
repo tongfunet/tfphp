@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace tfphp\framework\system\server;
 
@@ -6,7 +6,7 @@ use http\Exception;
 use tfphp\framework\tfphp;
 
 class tfresponse{
-    private tfphp $tfphp;
+    private tfphp $A;
     const T_DATA_HTML = 0;
     const T_DATA_JSON = 1;
     const T_DATA_PLAINTEXT = 2;
@@ -14,15 +14,15 @@ class tfresponse{
     protected int $dataType;
     protected string $dataCharset;
     protected $data;
-    public function __construct(tfphp $A){
-        $this->tfphp = $A;
+    public function __construct(tfphp $B8){
+        $this->A = $B8;
         $this->statusCode = 200;
         $this->dataType = tfresponse::T_DATA_HTML;
         $this->dataCharset = "UTF-8";
         $this->data = null;
     }
-    private function getStatus(int $A8): ?string{
-        $AB = [
+    private function C0(int $C6): ?string{
+        $CA = [
             100=>"Continue",
             200=>"OK",
             301=>"Moved Permanently",
@@ -38,33 +38,33 @@ class tfresponse{
             503=>"Service Unavailable",
             504=>"Gateway Timeout",
         ];
-        if(isset($AB[$A8])){
-            return $A8. " ". $AB[$A8];
+        if(isset($CA[$C6])){
+            return $C6. " ". $CA[$C6];
         }
         return null;
     }
-    public function setStatusCode(int $A8){
-        $this->statusCode = $A8;
+    public function setStatusCode(int $C6){
+        $this->statusCode = $C6;
     }
-    public function setDataType(int $E){
-        $this->dataType = $E;
+    public function setDataType(int $AB){
+        $this->dataType = $AB;
     }
-    public function setDataCharset(string $AE){
-        $this->dataCharset = $AE;
+    public function setDataCharset(string $CE){
+        $this->dataCharset = $CE;
     }
-    public function setData($A2){
-        $this->data = $A2;
+    public function setData($B2){
+        $this->data = $B2;
     }
-    public function header(string $B4, string $B5){
-        header($B4. ": ". $B5);
+    public function header(string $D2, string $D3){
+        header($D2. ": ". $D3);
     }
     public function response(){
-        header("HTTP/1.1 ". $this->getStatus($this->statusCode));
+        header("HTTP/1.1 ". $this->C0($this->statusCode));
         switch ($this->dataType){
             case tfresponse::T_DATA_JSON:
                 $this->header("Content-Type", "application/json; charset=". $this->dataCharset);
-                $BA = json_encode($this->data);
-                echo $BA;
+                $D5 = json_encode($this->data);
+                echo $D5;
                 break;
             case tfresponse::T_DATA_HTML:
                 $this->header("Content-Type", "text/html; charset=". $this->dataCharset);
@@ -75,78 +75,95 @@ class tfresponse{
                 echo $this->data;
                 break;
             default:
-                throw new \Exception("invalid data type ". strval($this->dataType));
+                throw new \Exception("invalid data type ". strval($this->dataType), 666051);
         }
     }
-    public function responseMIMEData($A2, ?int $BE, ?string $F){
-        $this->setDataType(($BE !== null && $BE >= 0 && $BE <= 2) ? $BE : tfresponse::T_DATA_PLAINTEXT);
-        $this->setDataCharset(($F !== null) ? $F : "UTF-8");
-        $this->setData($A2);
+    public function responseMIMEData($B2, ?int $D7, ?string $AC){
+        $this->setDataType(($D7 !== null && $D7 >= 0 && $D7 <= 2) ? $D7 : tfresponse::T_DATA_PLAINTEXT);
+        $this->setDataCharset(($AC !== null) ? $AC : "UTF-8");
+        $this->setData($B2);
         $this->response();
     }
-    public function responseJsonData($A2, string $F=null, bool $C1=true){
-        $this->responseMIMEData($A2, tfresponse::T_DATA_JSON, $F);
-        if($C1) die;
+    public function responseJSONData($B2, string $AC=null){
+        $this->responseMIMEData($B2, tfresponse::T_DATA_JSON, $AC);
     }
-    public function responseHtmlData($A2, string $F=null, bool $C1=true){
-        $this->responseMIMEData($A2, tfresponse::T_DATA_HTML, $F);
-        if($C1) die;
+    public function JSONData($B2, string $AC=null){
+        $this->responseJSONData($B2, $AC);
     }
-    public function responsePlaintextData($A2, string $F=null, bool $C1=true){
-        $this->responseMIMEData($A2, tfresponse::T_DATA_PLAINTEXT, $F);
-        if($C1) die;
+    public function responseHTMLData($B2, string $AC=null){
+        $this->responseMIMEData($B2, tfresponse::T_DATA_HTML, $AC);
     }
-    public function responseMIMEFile(string $C4, bool $C1=true){
-        $C8 = "";
-        if(($CA = strrpos($C4, ".")) !== false) $C8 = strtolower(substr($C4, $CA+1));
-        $CD = "" ;
-        switch ($C8){
+    public function HTMLData($B2, string $AC=null){
+        $this->responseHTMLData($B2, $AC);
+    }
+    public function responsePlainTextData($B2, string $AC=null){
+        $this->responseMIMEData($B2, tfresponse::T_DATA_PLAINTEXT, $AC);
+    }
+    public function PlainTextData($B2, string $AC=null){
+        $this->responsePlainTextData($B2, $AC);
+    }
+    public function JSON(int $A7, $B2, string $AC=null){
+        $this->setStatusCode($A7);
+        $this->responseJSONData($B2, $AC);
+    }
+    public function HTML(int $A7, $B2, string $AC=null){
+        $this->setStatusCode($A7);
+        $this->responseHTMLData($B2, $AC);
+    }
+    public function PlainText(int $A7, $B2, string $AC=null){
+        $this->setStatusCode($A7);
+        $this->responsePlainTextData($B2, $AC);
+    }
+    public function responseMIMEFile(string $D8){
+        $DD = "";
+        if(($E1 = strrpos($D8, ".")) !== false) $DD = strtolower(substr($D8, $E1+1));
+        $E4 = "";
+        switch ($DD){
             case "css":
-                $CD = "text/css";
+                $E4 = "text/css";
                 break;
             case "js":
-                $CD = "text/javascript" ;
+                $E4 = "text/javascript";
                 break;
             case "json":
-                $CD = "application/json" ;
+                $E4 = "application/json";
                 break;
             case "xml":
-                $CD = "text/xml" ;
+                $E4 = "text/xml";
                 break;
             case "jpg":
             case "jpeg":
-                $CD = "image/jpeg" ;
+                $E4 = "image/jpeg";
                 break;
             case "png":
-                $CD = "image/png" ;
+                $E4 = "image/png";
                 break;
             case "gif":
-                $CD = "image/gif" ;
+                $E4 = "image/gif";
                 break;
             case "txt":
-                $CD = "text/plaintext" ;
+                $E4 = "text/plaintext";
                 break;
             case "ico":
-                $CD = "image/x-icon" ;
+                $E4 = "image/x-icon";
                 break;
         }
-        if(!file_exists($C4)){
+        if(!file_exists($D8)){
             $this->setStatusCode(404);
             $this->response();
         }
-        else if(!$CD){
+        else if(!$E4){
             $this->setStatusCode(403);
             $this->response();
         }
         else{
             header("HTTP/1.1 200 OK");
-            header("Content-Type: ". $CD);
-            echo file_get_contents($C4);
+            header("Content-Type: ". $E4);
+            echo file_get_contents($D8);
         }
-        if($C1) die;
     }
-    public function location(string $D3, bool $C1=true){
-        header("Location: ". $D3);
-        if($C1) die;
+    public function location(string $E7){
+        header("HTTP/1.1 302 Moved");
+        header("Location: ". $E7);
     }
 }

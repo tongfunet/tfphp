@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace tfphp\model\dao\__default__;
 
@@ -7,8 +7,8 @@ use tfphp\framework\model\tfdao;
 use tfphp\framework\model\tfdaoSingle;
 
 class articleTag extends tfdaoSingle{
-    public function __construct(tfphp $tfphp){
-        parent::__construct($tfphp, [
+    public function __construct(tfphp $A){
+        parent::__construct($A, [
             "name"=>"articleTag",
             "fields"=>[
                 "tagId"=>["type"=>tfdao::FIELD_TYPE_INT],

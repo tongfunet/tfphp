@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace tfphp\framework\image;
 
@@ -15,256 +15,256 @@ class tfimage{
     const T_SMART_FUNC_TOP_LEFT = 8;
     const T_SMART_FUNC_CENTRE = 9;
     const T_SMART_FUNC_MAXSIZE_CENTRE = 10;
-    private tfphp $tfphp;
-    private $image;
-    private array $imageInfo;
-    private int $imageWidth;
-    private int $imageHeight;
-    private string $imageMIME;
-    private string $imageExtension;
-    private function createImageByMIME(string $BA, string $B2){
-        switch ($B2){
+    private tfphp $B9;
+    private $BC;
+    private array $C1;
+    private int $C6;
+    private int $C7;
+    private string $CA;
+    private string $CD;
+    private function CE(string $CF, string $D1){
+        switch ($D1){
             case "image/jpeg":
-                return imagecreatefromjpeg($BA);
+                return imagecreatefromjpeg($CF);
             case "image/png":
-                return imagecreatefrompng($BA);
+                return imagecreatefrompng($CF);
             case "image/gif":
-                return imagecreatefromgif($BA);
+                return imagecreatefromgif($CF);
             default:
-                return imagecreatefromjpeg($BA);
+                return imagecreatefromjpeg($CF);
         }
     }
-    private function saveImage(?string $BD, string $B2, bool $BE=false): bool{
-        switch ($B2){
+    private function D3(?string $D9, string $D1, bool $DA=false): bool{
+        switch ($D1){
             case "jpg":
             case "jpeg":
             case "image/jpeg":
-                if(!$BE) header("Content-Type: image/jpeg");
-                return imagejpeg($this->image, $BD);
+                if(!$DA) header("Content-Type: image/jpeg");
+                return imagejpeg($this->BC, $D9);
             case "png":
             case "image/png":
-                if(!$BE) header("Content-Type: image/png");
-                return imagepng($this->image, $BD);
+                if(!$DA) header("Content-Type: image/png");
+                return imagepng($this->BC, $D9);
             case "gif":
             case "image/git":
-                if(!$BE) header("Content-Type: image/git");
-                return imagegif($this->image, $BD);
+                if(!$DA) header("Content-Type: image/git");
+                return imagegif($this->BC, $D9);
             default:
-                if(!$BE) header("Content-Type: image/jpeg");
-                return imagejpeg($this->image, $BD);
+                if(!$DA) header("Content-Type: image/jpeg");
+                return imagejpeg($this->BC, $D9);
         }
     }
-    public function __construct(tfphp $A, string $BA=null, int $C1=null, int $C7=null, string $C9=null){
-        $this->tfphp = $A;
-        if($C1 === null) $C1 = 800;
-        if($C7 === null) $C7 = 600;
-        if($C9 === null) $C9 = "image/jpeg";
-        if(!$BA){
-            $this->imageWidth = intval($C1);
-            $this->imageHeight = intval($C7);
-            $this->imageMIME = strval($C9);
-            $this->imageExtension = "jpg";
-            $this->image = imagecreatetruecolor($C1, $C7);
+    public function __construct(tfphp $E6, string $CF=null, int $EA=null, int $EF=null, string $F0=null){
+        $this->B9 = $E6;
+        if($EA === null) $EA = 800;
+        if($EF === null) $EF = 600;
+        if($F0 === null) $F0 = "image/jpeg";
+        if(!$CF){
+            $this->C6 = intval($EA);
+            $this->C7 = intval($EF);
+            $this->CA = strval($F0);
+            $this->CD = "jpg";
+            $this->BC = imagecreatetruecolor($EA, $EF);
         }
         else{
-            $this->imageInfo = getimagesize($BA);
-            $this->imageWidth = intval($this->imageInfo[0]);
-            $this->imageHeight = intval($this->imageInfo[1]);
-            $this->imageMIME = strval($this->imageInfo["mime"]);
-            $this->imageExtension = str_replace("jpeg", "jpg", str_replace("image/", "", $this->imageMIME));
-            $this->image = $this->createImageByMIME($BA, $this->imageMIME);
-            if(!$this->image){
-                $this->image = imagecreatetruecolor($C1, $C7);
+            $this->C1 = getimagesize($CF);
+            $this->C6 = intval($this->C1[0]);
+            $this->C7 = intval($this->C1[1]);
+            $this->CA = strval($this->C1["mime"]);
+            $this->CD = str_replace("jpeg", "jpg", str_replace("image/", "", $this->CA));
+            $this->BC = $this->CE($CF, $this->CA);
+            if(!$this->BC){
+                $this->BC = imagecreatetruecolor($EA, $EF);
             }
         }
     }
-    public function save(string $BD): bool{
-        if(!preg_match("/\.([^\.]+)$/", $BD, $rg)){
+    public function save(string $D9): bool{
+        if(!preg_match("/\.([^\.]+)$/", $D9, $F5)){
             return false;
         }
-        switch ($rg[1]){
+        switch ($F5[1]){
             case "jpg":
             case "jpeg":
-                return imagejpeg($this->image, $BD);
+                return imagejpeg($this->BC, $D9);
             case "png":
-                return imagepng($this->image, $BD);
+                return imagepng($this->BC, $D9);
             case "gif":
-                return imagegif($this->image, $BD);
+                return imagegif($this->BC, $D9);
             default:
-                return imagejpeg($this->image, $BD);
+                return imagejpeg($this->BC, $D9);
         }
     }
     public function output(): bool{
-        switch ($this->imageMIME){
+        switch ($this->CA){
             case "image/jpeg":
                 header("Content-Type: image/jpeg");
-                return imagejpeg($this->image);
+                return imagejpeg($this->BC);
             case "image/png":
                 header("Content-Type: image/png");
-                return imagepng($this->image);
+                return imagepng($this->BC);
             case "image/git":
                 header("Content-Type: image/git");
-                return imagegif($this->image);
+                return imagegif($this->BC);
             default:
                 header("Content-Type: image/jpeg");
-                return imagejpeg($this->image);
+                return imagejpeg($this->BC);
         }
     }
     public function isTransparent(): bool{
-        $CF = imagecolorat($this->image, 1, 1);
-        $D0 = imagecolorat($this->image, $this->imageWidth-1, 1) ;
-        $D6 = imagecolorat($this->image, 1, $this->imageHeight-1) ;
-        $DC = imagecolorat($this->image, $this->imageWidth-1, $this->imageHeight-1) ;
-        $E0 = ($CF >> 24) & 0xFF ;
-        $E5 = ($D0 >> 24) & 0xFF ;
-        $E9 = ($D6 >> 24) & 0xFF ;
-        $EB = ($DC >> 24) & 0xFF ;
-        return ($E0 > 0 || $E5 > 0 || $E9 > 0 || $EB > 0);
+        $F6 = imagecolorat($this->BC, 1, 1);
+        $F8 = imagecolorat($this->BC, $this->C6-1, 1);
+        $FB = imagecolorat($this->BC, 1, $this->C7-1);
+        $FE = imagecolorat($this->BC, $this->C6-1, $this->C7-1);
+        $A02 = ($F6 >> 24) & 0xFF;
+        $A07 = ($F8 >> 24) & 0xFF;
+        $A0B = ($FB >> 24) & 0xFF;
+        $A0F = ($FE >> 24) & 0xFF;
+        return ($A02 > 0 || $A07 > 0 || $A0B > 0 || $A0F > 0);
     }
-    public function zoom(float $EF): ?tfimage{
-        $C1 = intval($this->imageWidth*$EF);
-        $C7 = intval($this->imageHeight*$EF) ;
-        $F0 = new tfimage($this->tfphp, null, $C1, $C7, $this->imageMIME) ;
-        if(!imagecopyresampled($F0->getImage(), $this->image, 0, 0, 0, 0, $C1, $C7, $this->imageWidth, $this->imageHeight)){
+    public function zoom(float $A10): ?tfimage{
+        $EA = intval($this->C6*$A10);
+        $EF = intval($this->C7*$A10);
+        $A15 = new tfimage($this->B9, null, $EA, $EF, $this->CA);
+        if(!imagecopyresampled($A15->getImage(), $this->BC, 0, 0, 0, 0, $EA, $EF, $this->C6, $this->C7)){
             return null;
         }
-        return $F0;
+        return $A15;
     }
-    public function crop(int $F2, int $F7, int $C1, int $C7): ?tfimage{
-        if($F2+$C1 > $this->imageWidth || $F7+$C7 > $this->imageHeight){
+    public function crop(int $A18, int $A1C, int $EA, int $EF): ?tfimage{
+        if($A18+$EA > $this->C6 || $A1C+$EF > $this->C7){
             return null;
         }
-        $F0 = new tfimage($this->tfphp, null, $C1, $C7, $this->imageMIME);
-        if(!imagecopyresampled($F0->getImage(), $this->image, 0, 0, $F2, $F7, $this->imageWidth, $this->imageHeight, $this->imageWidth, $this->imageHeight)){
+        $A15 = new tfimage($this->B9, null, $EA, $EF, $this->CA);
+        if(!imagecopyresampled($A15->getImage(), $this->BC, 0, 0, $A18, $A1C, $this->C6, $this->C7, $this->C6, $this->C7)){
             return null;
         }
-        return $F0;
+        return $A15;
     }
-    public function smartCrop(int $FD, int $C1, int $C7): ?tfimage{
-        $F0 = null;
-        switch ($FD){
+    public function smartCrop(int $A1D, int $EA, int $EF): ?tfimage{
+        $A15 = null;
+        switch ($A1D){
             case tfimage::T_SMART_FUNC_TOP:
-                $F2 = intval(($this->imageWidth-$C1)/2);
-                $F7 = 0 ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = intval(($this->C6-$EA)/2);
+                $A1C = 0;
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_TOP_RIGHT:
-                $F2 = intval($this->imageWidth-$C1) ;
-                $F7 = 0 ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = intval($this->C6-$EA);
+                $A1C = 0;
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_RIGHT:
-                $F2 = intval($this->imageWidth-$C1) ;
-                $F7 = intval(($this->imageHeight-$C7)/2) ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = intval($this->C6-$EA);
+                $A1C = intval(($this->C7-$EF)/2);
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_BOTTOM_RIGHT:
-                $F2 = intval($this->imageWidth-$C1) ;
-                $F7 = intval($this->imageHeight-$C7) ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = intval($this->C6-$EA);
+                $A1C = intval($this->C7-$EF);
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_BOTTOM:
-                $F2 = intval(($this->imageWidth-$C1)/2) ;
-                $F7 = intval($this->imageHeight-$C7) ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = intval(($this->C6-$EA)/2);
+                $A1C = intval($this->C7-$EF);
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_BOTTOM_LEFT:
-                $F2 = 0 ;
-                $F7 = intval($this->imageHeight-$C7) ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = 0;
+                $A1C = intval($this->C7-$EF);
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_LEFT:
-                $F2 = 0 ;
-                $F7 = intval(($this->imageHeight-$C7)/2) ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = 0;
+                $A1C = intval(($this->C7-$EF)/2);
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_TOP_LEFT:
-                $F2 = 0 ;
-                $F7 = 0 ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = 0;
+                $A1C = 0;
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
             case tfimage::T_SMART_FUNC_CENTRE:
-                $F2 = intval(($this->imageWidth-$C1)/2) ;
-                $F7 = intval(($this->imageHeight-$C7)/2) ;
-                $F0 = $this->crop($F2, $F7, $C1, $C7) ;
+                $A18 = intval(($this->C6-$EA)/2);
+                $A1C = intval(($this->C7-$EF)/2);
+                $A15 = $this->crop($A18, $A1C, $EA, $EF);
                 break;
         }
-        return $F0;
+        return $A15;
     }
-    public function centerCrop(int $C1, int $C7): ?tfimage{
-        if($this->getWidth() <= $C1 || $this->getHeight() <= $C7){
-            $F0 = new tfimage($this->tfphp, null, $C1, $C7, $this->imageMIME);
-            if($this->getWidth() > $C1){
-                $F2 = 0;
-                $A01 = ($this->getWidth()-$C1)/2 ;
+    public function centerCrop(int $EA, int $EF): ?tfimage{
+        if($this->getWidth() <= $EA || $this->getHeight() <= $EF){
+            $A15 = new tfimage($this->B9, null, $EA, $EF, $this->CA);
+            if($this->getWidth() > $EA){
+                $A18 = 0;
+                $A21 = ($this->getWidth()-$EA)/2;
             }
             else{
-                $F2 = ($C1-$this->getWidth())/2;
-                $A01 = 0 ;
+                $A18 = ($EA-$this->getWidth())/2;
+                $A21 = 0;
             }
-            if($this->getHeight() > $C7){
-                $F7 = 0;
-                $A07 = ($this->getHeight()-$C7)/2 ;
+            if($this->getHeight() > $EF){
+                $A1C = 0;
+                $A22 = ($this->getHeight()-$EF)/2;
             }
             else{
-                $F7 = ($C7-$this->getHeight())/2;
-                $A07 = 0 ;
+                $A1C = ($EF-$this->getHeight())/2;
+                $A22 = 0;
             }
-            if(!imagecopyresampled($F0->getImage(), $this->image, $F2, $F7, $A01, $A07, $this->imageWidth, $this->imageHeight, $this->imageWidth, $this->imageHeight)){
+            if(!imagecopyresampled($A15->getImage(), $this->BC, $A18, $A1C, $A21, $A22, $this->C6, $this->C7, $this->C6, $this->C7)){
                 return null;
             }
         }
         else{
-            $F0 = ($C1/$this->getWidth() > $C7/$this->getHeight()) ? $this->zoom($C1/$this->getWidth()) : $this->zoom($C7/$this->getHeight());
-            $F0 = $F0->centerCrop($C1, $C7) ;
+            $A15 = ($EA/$this->getWidth() > $EF/$this->getHeight()) ? $this->zoom($EA/$this->getWidth()) : $this->zoom($EF/$this->getHeight());
+            $A15 = $A15->centerCrop($EA, $EF);
         }
-        return $F0;
+        return $A15;
     }
-    public function fillColor(string $A0D, int $F2, int $F7): ?tfimage{
-        $A10 = imagecolorallocate($this->image, hexdec(substr($A0D, 0, 2)), hexdec(substr($A0D, 2, 2)), hexdec(substr($A0D, 4, 2)));
-        if(!imagefill($this->image, $F2, $F7, $A10)){
+    public function fillColor(string $A27, int $A18, int $A1C): ?tfimage{
+        $A2C = imagecolorallocate($this->BC, hexdec(substr($A27, 0, 2)), hexdec(substr($A27, 2, 2)), hexdec(substr($A27, 4, 2)));
+        if(!imagefill($this->BC, $A18, $A1C, $A2C)){
             return null;
         }
         return $this;
     }
-    public function writeText(string $A14, int $F2, int $F7, int $A19=null, int $A1B=null, string $A0D=null, string $A1E=null): ?tfimage{
-        if($A19 === null) $A19 = 16;
-        if($A1B === null) $A1B = 0;
-        if($A0D === null) $A0D = "000000";
-        if($A1E === null) $A1E = TFPHP_ROOT. "/resource/fonts/simhei.ttf";
-        $A24 = imagecolorallocate($this->image, hexdec(substr($A0D, 0, 2)), hexdec(substr($A0D, 2, 2)), hexdec(substr($A0D, 4, 2))) ;
-        if(!imagettftext($this->image, $A19, $A1B, $F2, $F7+$A19, $A24, $A1E, $A14)){
+    public function writeText(string $A30, int $A18, int $A1C, int $A33=null, int $A36=null, string $A27=null, string $A3A=null): ?tfimage{
+        if($A33 === null) $A33 = 16;
+        if($A36 === null) $A36 = 0;
+        if($A27 === null) $A27 = "000000";
+        if($A3A === null) $A3A = TFPHP_ROOT. "/resource/fonts/simhei.ttf";
+        $A3F = imagecolorallocate($this->BC, hexdec(substr($A27, 0, 2)), hexdec(substr($A27, 2, 2)), hexdec(substr($A27, 4, 2)));
+        if(!imagettftext($this->BC, $A33, $A36, $A18, $A1C+$A33, $A3F, $A3A, $A30)){
             return null;
         }
         return $this;
     }
-    public function addWatermark(string $A29, int $F2, int $F7): ?tfimage{
-        $A2C = new tfimage($this->tfphp, $A29);
-        if(!imagecopyresampled($this->image, $A2C->getImage(), $F2, $F7, 0, 0, $A2C->getWidth(), $A2C->getHeight(), $A2C->getWidth(), $A2C->getHeight())){
+    public function addWatermark(string $A44, int $A18, int $A1C): ?tfimage{
+        $A49 = new tfimage($this->B9, $A44);
+        if(!imagecopyresampled($this->BC, $A49->getImage(), $A18, $A1C, 0, 0, $A49->getWidth(), $A49->getHeight(), $A49->getWidth(), $A49->getHeight())){
             return null;
         }
         return $this;
     }
     public function getImage(){
-        return $this->image;
+        return $this->BC;
     }
     public function getInfo(){
-        $this->imageInfo[0] = $this->imageWidth;
-        $this->imageInfo[1] = $this->imageHeight;
-        $this->imageInfo[3] = "width=\"". $this->imageWidth. "\" height=\"". $this->imageHeight. "\"";
-        $this->imageInfo["mime"] = $this->imageMIME;
-        return $this->imageInfo;
+        $this->C1[0] = $this->C6;
+        $this->C1[1] = $this->C7;
+        $this->C1[3] = "width=\"". $this->C6. "\" height=\"". $this->C7. "\"";
+        $this->C1["mime"] = $this->CA;
+        return $this->C1;
     }
     public function getWidth(): int{
-        return $this->imageWidth;
+        return $this->C6;
     }
     public function getHeight(): int{
-        return $this->imageHeight;
+        return $this->C7;
     }
     public function getMIME(): string{
-        return $this->imageMIME;
+        return $this->CA;
     }
     public function getExtension(): string{
-        return $this->imageExtension;
+        return $this->CD;
     }
 }

@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace tfphp\framework\system;
 
@@ -10,25 +10,28 @@ class tfrestfulAPI {
     public function __construct(tfphp $A){
         $this->tfphp = $A;
     }
-    private function response($C, $D, $A0){
-        $A2 = $this->tfphp->getResponse();
-        $A2->setDataType($A0);
-        $A2->setDataCharset(($D) ? $D : "UTF-8");
-        $A2->setData($C);
-        $A2->response();
+    protected function responseJSONData($A1, $A4=null){
+        $this->tfphp->getResponse()->responseJSONData($A1, $A4);
     }
-    protected function responseJsonData($C, $D=null){
-        $this->tfphp->getResponse()->responseJsonData($C, $D);
+    protected function JSONData($A1, $A4=null){
+        $this->responseJSONData($A1, $A4);
     }
-    protected function location(string $A5){
-        $this->tfphp->getResponse()->location($A5);
+    protected function JSON(int $AA, $A1, string $A4=null){
+        $this->tfphp->getResponse()->JSON($AA, $A1, $A4);
+    }
+    protected function location(string $AC){
+        $this->tfphp->getResponse()->location($AC);
     }
     protected function onLoad(){
-        $A9 = strtoupper($_SERVER["REQUEST_METHOD"]);
-        $AD = $_SERVER["RESTFUL_RESOURCE_FUNCTION"] ;
-        if(method_exists($this, "on". $A9)) call_user_func_array([$this, "on". $A9], []);
-        else if(method_exists($this, "on_". $AD)) call_user_func_array([$this, "on_". $AD], []);
-        else if(method_exists($this, "on". $A9. "_". $AD)) call_user_func_array([$this, "on". $A9. "_". $AD], []);
+        $B2 = strtoupper($_SERVER["REQUEST_METHOD"]);
+        $B6 = $this->tfphp->getRequest()->getResourceFunction();
+        if($B6 != "" && method_exists($this, "on_". $B6)) call_user_func_array([$this, "on_". $B6], []);
+        else if($B6 != "" && method_exists($this, "on". $B2. "_". $B6)) call_user_func_array([$this, "on". $B2. "_". $B6], []);
+        else if(method_exists($this, "on". $B2)) call_user_func_array([$this, "on". $B2], []);
+        else $this->onLoadCustom();
+    }
+    protected function onLoadCustom(){
+
     }
     public function load(){
         $this->onLoad();

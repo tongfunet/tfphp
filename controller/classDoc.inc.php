@@ -1,11 +1,11 @@
-<?php
+<?php 
 
 namespace tfphp\controller;
 
 use tfphp\framework\system\tfpage;
 
-class classDoc extends tfpage {
+class classDoc extends tfpage{
     protected function onLoad(){
-        $this->view->setVar("argv", $_SERVER["PATH_ARGV"]);
+        $this->view->setVar("args", $this->tfphp->getRequest()->server()->pathArgs());
     }
 }

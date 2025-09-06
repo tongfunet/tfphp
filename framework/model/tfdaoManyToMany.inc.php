@@ -1,129 +1,204 @@
-<?php
+<?php 
 
 namespace tfphp\framework\model;
 
 use tfphp\framework\tfphp;
 
+/**
+ * Class tfdaoManyToMany
+ * @package tfphp\framework\model
+ * @datetime 2025/7/18
+ */
 class tfdaoManyToMany extends tfdao{
+    private array $A;
+    private ?string $D;
     protected array $tables;
     protected array $relationParams;
     protected ?array $options;
-    public function __construct(tfphp $A3, array $A, array $B, array $A0=null){
-        parent::__construct($A3);
-        $this->tables = $A;
-        $this->relationParams = $B;
-        $this->options = $A0;
+    public function __construct(tfphp $AF, array $A3, array $A7, array $A9=null){
+        parent::__construct($AF);
+        $this->A = [];
+        $this->D = null;
+        $this->tables = $A3;
+        $this->relationParams = $A7;
+        $this->options = $A9;
         if(count($this->tables) != 3){
             throw new \Exception("the number of tables must be 3");
         }
-        if(count($this->relationParams["fieldMapping"]) != 2){
-            throw new \Exception("the number of relation param 'fieldMapping' must be 2");
+        if(count($this->relationParams) != 2){
+            throw new \Exception("the number of relation parameters must be 2");
+        }
+        foreach ($this->relationParams as $BA => $BF){
+            if(!isset($this->relationParams[$BA]["type"])) $this->relationParams[$BA]["type"] = tfdao::RELATION_PARAM_TYPE_ARRAY;
+            switch ($this->relationParams[$BA]["type"]){
+                case tfdao::RELATION_PARAM_TYPE_ARRAY:
+                    if(!isset($BF["mapping"]) || !is_array($BF["mapping"])){
+                        throw new \Exception("the relation parameter ". $BA. " is of type array and require 'mapping' param");
+                    }
+                    break;
+                case tfdao::RELATION_PARAM_TYPE_SQL:
+                    if(empty($BF["sql"])){
+                        throw new \Exception("the relation parameter ". $BA. " is of type array and require 'sql' param");
+                    }
+                    preg_match_all("/a\.([a-zA-Z0-9\_\-]+)[\s\t\r\n]*\=[\s\t\r\n]*m\.([a-zA-Z0-9\_\-]+)/", $BF["sql"], $C5);
+                    $this->relationParams[$BA]["mapping"] = [];
+                    foreach ($C5[1] as $C8 => $C9){
+                        $this->relationParams[$BA]["mapping"][$C9] = $C5[2][$C8];
+                        $this->relationParams[$BA]["sql"] = str_replace("a.". $C9, "?", $this->relationParams[$BA]["sql"]);
+                    }
+                    break;
+                default:
+                    throw new \Exception("invalid type of relation parameter");
+            }
         }
     }
-    private function doSelect(array $A8): ?array{
-        $AC = [];
-        foreach ($this->relationParams["fieldMapping"][0] as $B1 => $field2) $AC[$field2] = $A8[$B1];
-        $B3 = $this->tables[2]->selectAll($AC);
-        if($B3){
-            $B9 = [];
-            foreach ($B3 as $CDatum){
-                $BC = [];
-                foreach ($this->relationParams["fieldMapping"][1] as $B1 => $field2) $BC[$field2] = $CDatum[$B1];
-                $C0 = $this->tables[1]->select($BC);
-                if($C0){
-                    $B9[] = $C0;
+
+    public function setAFields(array $CD): tfdaoManyToMany{
+        $this->A["selectAFields"] = $CD;
+        return $this;
+    }
+    public function setBFields(array $CD): tfdaoManyToMany{
+        $this->A["selectBFields"] = $CD;
+        return $this;
+    }
+
+    public function bind(array $CE, array $D4, array $A9=null): bool{
+        $D7 = $this->getTable(1);
+        $DB = $this->relationParams[0];
+        $DD = $this->relationParams[1];
+        foreach ($CE as $E0){
+            $E1 = [];
+            foreach ($DB["mapping"] as $E2 => $E7) $E1[$E7] = $E0[$E2];
+            foreach ($D4 as $EC){
+                $F1 = $E1;
+                foreach ($DD["mapping"] as $E7 => $F5) $F1[$E7] = $EC[$F5];
+                if(!$D7->select($F1)){
+                    if(!$D7->insert($F1)){
+                        return false;
+                    }
                 }
             }
-            return $B9;
         }
-        return null;
+        return true;
     }
-    private function doSelectReverse(array $A8): ?array{
-        $BC = [];
-        foreach ($this->relationParams["fieldMapping"][1] as $B1 => $field2) $BC[$field2] = $A8[$B1];
-        $B3 = $this->tables[2]->selectAll($BC);
-        if($B3){
-            $B9 = [];
-            foreach ($B3 as $CDatum){
-                $AC = [];
-                foreach ($this->relationParams["fieldMapping"][0] as $B1 => $field2) $AC[$field2] = $CDatum[$B1];
-                $C0 = $this->tables[0]->select($AC);
-                if($C0){
-                    $B9[] = $C0;
+    public function unbind(array $CE, array $D4, array $A9=null): bool{
+        $D7 = $this->getTable(1);
+        $DB = $this->relationParams[0];
+        $DD = $this->relationParams[1];
+        foreach ($CE as $E0){
+            $E1 = [];
+            foreach ($DB["mapping"] as $E2 => $E7) $E1[$E7] = $E0[$E2];
+            foreach ($D4 as $EC){
+                $F1 = $E1;
+                foreach ($DD["mapping"] as $E7 => $F5) $F1[$E7] = $EC[$F5];
+                if(!$D7->delete($F1)){
+                    return false;
                 }
             }
-            return $B9;
-        }
-        return null;
-    }
-    public function select(array $C1): ?array{
-        $A8 = $this->tables[0]->select($C1);
-        $B9 = $this->doSelect($A8) ;
-        return $B9;
-    }
-    public function constraintSelect(array $C5, string $CB="default"): ?array{
-        $A8 = $this->tables[0]->constraintSelect($C5, $CB);
-        $B9 = $this->doSelect($A8) ;
-        return $B9;
-    }
-    public function keySelect(array $C5, string $CB="default"): ?array{
-        return $this->constraintSelect($C5, $CB);
-    }
-    public function insert(array $CD, array $C0, array $A8=null): bool{
-        $CE = $this->tfphp->getDataSource();
-        $CE->beginTransaction();
-        try{
-            if($A8 === null){
-                $A8 = [];
-            }
-            foreach ($this->relationParams["fieldMapping"][0] as $B1 => $field2) $A8[$field2] = $CD[$B1];
-            foreach ($this->relationParams["fieldMapping"][1] as $B1 => $field2) $A8[$field2] = $C0[$B1];
-            if(!$this->tables[2]->insert($A8, ["checkConstraints"=>true])){
-                $CE->rollback();
-                return false;
-            }
-        }
-        catch(\Exception $e){
-            throw $e;
-        }
-        $CE->commit();
-        return true;
-    }
-    public function insertMultiple(array $CD, array $C0, array $A8=null): bool{
-        foreach ($C0 as $BDatum){
-            if(!$this->insert($CD, $BDatum, $A8)){
-                return false;
-            }
         }
         return true;
     }
-    public function delete(array $CD, array $C0): bool{
-        $CE = $this->tfphp->getDataSource();
-        $CE->beginTransaction();
-        try{
-            $C1 = [];
-            foreach ($this->relationParams["fieldMapping"][0] as $B1 => $field2) $C1[$field2] = $CD[$B1];
-            foreach ($this->relationParams["fieldMapping"][1] as $B1 => $field2) $C1[$field2] = $C0[$B1];
-            if(!$this->tables[2]->delete($C1)){
-                $CE->rollback();
-                return false;
+    public function replace(array $CE, array $D4, array $A9=null): bool{
+        $D7 = $this->getTable(1);
+        $DB = $this->relationParams[0];
+        $DD = $this->relationParams[1];
+        $F9 = [];
+        $FC = [];
+        foreach ($CE as $E0){
+            $E1 = [];
+            foreach ($DB["mapping"] as $E2 => $E7) $E1[$E7] = $E0[$E2];
+            foreach ($D4 as $EC){
+                $F1 = $E1;
+                foreach ($DD["mapping"] as $E7 => $F5) $F1[$E7] = $EC[$F5];
+                if(!$D7->select($F1)){
+                    if(!$D7->insert($F1)){
+                        return false;
+                    }
+                }
             }
         }
-        catch(\Exception $e){
-            throw $e;
+        foreach ($CE as $E0){
+            $FE = [];
+            foreach ($DB["mapping"] as $E2 => $E7) $FE[$E7] = $E0[$E2];
+            $F9[] = $FE;
         }
-        $CE->commit();
-        return true;
-    }
-    public function deleteMultiple(array $CD, array $C0): bool{
-        foreach ($C0 as $BDatum){
-            if(!$this->delete($CD, $BDatum)){
+        foreach ($D4 as $EC){
+            $A05 = [];
+            foreach ($DD["mapping"] as $E7 => $F5) $A05[$E7] = $EC[$F5];
+            $FC[] = $A05;
+        }
+        foreach ($FC as $A05){
+            $A06 = $D7->selectAll($A05);
+            if($A06 === null){
                 return false;
+            }
+            foreach ($A06 as $A0C){
+                $A0E = false;
+                foreach ($F9 as $FE) if(empty(array_diff_assoc($FE, $A0C))) $A0E = true;
+                if(!$A0E){
+                    if(!$D7->delete($A0C)){
+                        return false;
+                    }
+                }
             }
         }
         return true;
     }
-    public function getTable(int $D4): ?tfdaoSingle{
-        return $this->tables[$D4];
+
+    public function getADataAll(array $EC, array $A9=null): array{
+        if($A9 === null) $A9 = [];
+        if(empty($A9["maxDataSelect"])) $A9["maxDataSelect"] = 1000;
+        $A14 = $this->getTable(0);
+        $D7 = $this->getTable(1);
+        $DB = $this->relationParams[0];
+        $DD = $this->relationParams[1];
+        $A05 = [];
+        foreach ($DD["mapping"] as $E7 => $F5) $A05[$E7] = $EC[$F5];
+        $A06 = $D7->selectMany($A05, 0, $A9["maxDataSelect"]);
+        $A17 = [];
+        if(is_array($A06)){
+            foreach ($A06 as $A0C){
+                $FE = [];
+                foreach ($DB["mapping"] as $E2 => $E7) $FE[$E7] = $A0C[$E2];
+                if(!empty($this->A["selectAFields"])) $A14 = $A14->setFields($this->A["selectAFields"]);
+                $E0 = $A14->select($FE);
+                if($E0){
+                    $A17[] = $E0;
+                }
+            }
+        }
+        return $A17;
+    }
+    public function getBDataAll(array $E0, array $A9=null): array{
+        if($A9 === null) $A9 = [];
+        if(empty($A9["maxDataSelect"])) $A9["maxDataSelect"] = 1000;
+        $D7 = $this->getTable(1);
+        $A1A = $this->getTable(2);
+        $DB = $this->relationParams[0];
+        $DD = $this->relationParams[1];
+        $FE = [];
+        foreach ($DB["mapping"] as $E2 => $E7) $FE[$E7] = $E0[$E2];
+        $A06 = $D7->selectMany($FE, 0, $A9["maxDataSelect"]);
+        $A1C = [];
+        if(is_array($A06)){
+            foreach ($A06 as $A0C){
+                $A05 = [];
+                foreach ($DD["mapping"] as $E7 => $F5) $A05[$E7] = $A0C[$F5];
+                if(!empty($this->A["selectBFields"])) $A1A = $A1A->setFields($this->A["selectBFields"]);
+                $EC = $A1A->select($A05);
+                if($EC){
+                    $A1C[] = $EC;
+                }
+            }
+        }
+        return $A1C;
+    }
+
+    public function getTable(int $A1D): ?tfdaoSingle{
+        return $this->tables[$A1D];
+    }
+
+    public function getLastError(): ?string{
+        return $this->D;
     }
 }

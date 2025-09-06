@@ -1,14 +1,14 @@
-<?php
+<?php 
 
 namespace tfphp\controller;
 
 use tfphp\framework\system\tfpage;
 use tfphp\model\user;
 
-class usersWithPages extends tfpage {
+class usersWithPages extends tfpage{
     protected function onLoad(){
-        $user = new user($this->tfphp);
-        $users = $user->getUsersWithPages();
-        $this->view->setVar("users", $users);
+        $A = new user($this->tfphp);
+        $A0 = $A->getUsersWithPages();
+        $this->view->setVar("users", $A0);
     }
 }

@@ -1,14 +1,14 @@
-<?php
+<?php 
 
 namespace tfphp\controller;
 
 use tfphp\framework\system\tfpage;
 use tfphp\model\article;
 
-class articles extends tfpage {
+class articles extends tfpage{
     protected function onLoad(){
-        $article = new article($this->tfphp);
-        $articles = $article->getArticles();
-        $this->view->setVar("articles", $articles);
+        $A = new article($this->tfphp);
+        $A4 = $A->getArticles();
+        $this->view->setVar("articles", $A4);
     }
 }

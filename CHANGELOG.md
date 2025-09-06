@@ -60,3 +60,46 @@
 * [v0.6.5] Modified the initialization method of the class 'tfmodel' for DAO objects, adding three methods: 'setDAOOneToOne', 'setDAOOneToMan', 'setDAOManyToMan' to initialize composite DAO objects. Independent DAO objects do not require explicit initialization.
 * [v0.6.5] Modified the method 'onLoad' of the class 'tfrestfulAPI' to support custom methods such as 'on[REQUEST_METHOD]','on[RESOURCE_FUNCTION]','on[REQUEST_METHOD]_[RESOURCE_FUNCTION]'.
 * [v0.6.5] Added the method 'centerCrop' of class 'tfimage' to crop images of different sizes.
+
+## [v0.6.6] - 2024/12/08
+
+* [v0.6.6] Added the model 'tffastCRUDModel' and controller 'tffastCRUDController' to quickly build backend functions for adding, retrieving, modifying, and deleting.
+* [v0.6.6] Custom functions 'set_error_handler' and 'set_exception_handler' have been set up to display more detailed error and exception information.
+* [v0.6.6] Added class' tfget ',' tfpost'、'tffiles'、'tfcookie'、'tfserver'、'tfsession'、'tfglobals'， Used to obtain input data.
+* [v0.6.6] Added the 'realRemoteAddr' method to the 'tfserver' class to obtain the real client IP address.
+* [v0.6.6] Added the 'rawData' method to the 'tfrequest' class to retrieve raw client submitted data.
+
+## [v0.6.7] - 2025/05/21
+
+* [v0.6.7] The data source has added a parameter 'table_prefix' to set the prefix string for the data table. This data table prefix is only used for database operations, and the 'DAO' object name corresponding to the data table is not included.
+* [v0.6.7] Added 'JSON', 'HTML', and 'PlainText' methods to the 'tfresponse' class to directly output 'JSON' data, 'HTML' data, and 'PlainText' plain text data.
+* [v0.6.7] Modify some method names of the 'tfresponse' class, changing method 'responsivJsonData' to 'responsiveJSONData', method 'responsiveHTMLDData' to 'responsiveHTMData', and method 'responsivePanetext' to 'responsivePaneText'.
+* [v0.6.7] Modify some methods of the 'tfresponse' class that contain the $stopScript parameter, removing the $stopScript parameter. When using it, you can terminate the code by returning tfresponse:: xxx.
+* [v0.6.7] Added the 'setCookie' method to the 'tfcookie' class, supporting complete functionality for setting 'Cookie' data.
+* [v0.6.7] Modify the transaction processing methods of class' tfdo 'and add support for' SAVEPOINT 'to achieve support for multi-layer transaction processing.
+* [v0.6.7] Organized three classes, 'tfdao', 'tfdao Single', and 'tfdao OneToOne', and defined empty methods for the common methods of the 'tfdao Single' and 'tfdao OneToOne' classes in the common base class' tfdao '.
+* [v0.6.7] Added error codes to all classes in the framework that throw exceptions.
+* [v0.6.7] Organized the 'tfapi' class and simplified the response function.
+* [v0.6.7] Organized the 'tfrestfulAPI' class and simplified the response function.
+* [v0.6.7] Added the 'onLoadCustom' method to the 'tfrestfulAPI' class, which switches to the 'onLoadCustom' custom method when no available response method is found.
+* [v0.6.7] Adjusted two methods of 'tfdaoManyToMan', changing 'insert' to 'insertOne' and 'delete' to 'deleteOne'.
+* [v0.6.7] Added class' tfcrudBuilder 'to enable rapid development of interfaces for' CRUD 'operations.
+* [v0.6.7] Added 'getResourceValue' and 'getResourceFunction' methods to the 'tfresponse' class to retrieve access resource values and access resource functionality.
+* [v0.6.7] Removed the model 'tffastCRUDModel' and controller 'tffastCRUDController'.
+* [v0.6.7] Added support for built-in variables such as' $tfphp ',' $get ',' $post ',' $files', '$cookie', '$server', and '$session' to the 'tfview' class, greatly simplifying the code volume for template calls to system data.
+* [v0.6.7] Added the 'buildBreadCrumb' method to the 'tfcrudBuilder' class to retrieve breadcrumb data.
+* [v0.6.7] Added 'options' parameter to the' select 'related methods of the' tfdaoSngle 'class, and set the' selectFields' sub parameter in the 'options' parameter to set the field information for querying the database.
+* [v0.6.7] Added the 'options' parameter to the' select 'related methods of the' tfdaoOneToOne 'class, and set the' selectFields' sub parameter in the 'options' parameter to set the field information for querying the database.
+* [v0.6.7] Added the 'setFields' method to the' tfdaoSngle 'class, and implemented parameter friendly input for data query methods through the' methodChaining 'method.
+* [v0.6.7] Added the 'setFields' method to the' tfdaoOneToOne 'class, and implemented parameter friendly input for data query methods through the' methodChaining 'method.
+* [v0.6.7] All methods of the 'tfdaoOneToMan' class have been removed because it is more convenient to directly manipulate one to many data structures during binding, unbinding, and querying.
+* [v0.6.7] Removed all methods of the 'tfdaoManyToMan' class and added several new methods.
+* [v0.6.7] Added a 'bind' method to the 'tfdaoManyToMan' class to associate data from Table A and Table B through Table M.
+* [v0.6.7] Added the 'unbind' method to the 'tfdaoManyToMan' class to disassociate data from table A and table B.
+* [v0.6.7] Added a 'replace' method to the 'tfdaoManyToMan' class to replace the existing association between table A data and table B data.
+* [v0.6.7] Added the 'getADataAll' method to the 'tfdaoManyToMan' class to retrieve all data associated with table B in table A.
+* [v0.6.7] Added the 'getBDataAll' method to the 'tfdaoManyToMan' class to retrieve all B table data associated with A table data.
+* [v0.6.7] Changed the null return of 'many' and 'all' methods in 'tfdo' to an empty array.
+* [v0.6.7] Changed the return of null for 'tfdao', 'tfdao Single', 'tfdaoOneToOne', 'tfdaoOneToMan', 'tfdaoAnyToMan' methods related to 'Man' and 'All' methods to an empty array.
+* [v0.6.7] Added the 'setOrders' method to the' tfdaoSngle 'class to set the sorting of query data.
+* [v0.6.7] Added the 'setOrders' method to the' tfdaoOneToOne 'class to set the sorting of query data.

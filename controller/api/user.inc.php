@@ -1,34 +1,34 @@
-<?php
+<?php 
 
 namespace tfphp\controller\api;
 
 use tfphp\framework\system\tfrestfulAPI;
 use tfphp\model\user as userModel;
 
-class user extends tfrestfulAPI {
+class user extends tfrestfulAPI{
     protected function onLoad(){
-        $user = new userModel($this->tfphp);
-        $resValue = $_SERVER["RESTFUL_RESOURCE_VALUE"];
-        $resFunction = $_SERVER["RESTFUL_RESOURCE_FUNCTION"];
-        switch ($resFunction){
+        $A = new userModel($this->tfphp);
+        $A3 = $_SERVER["RESTFUL_RESOURCE_VALUE"];
+        $A7 = $_SERVER["RESTFUL_RESOURCE_FUNCTION"];
+        switch ($A7){
             case "add":
-                $ret = $user->addUser();
-                if(!$ret) $this->responseJsonData(["errcode"=>1, "errmsg"=>"fail to add user"]);
+                $AA = $A->addUser();
+                if(!$AA) $this->responseJsonData(["errcode"=>1, "errmsg"=>"fail to add user"]);
                 else $this->responseJsonData(["errcode"=>0, "errmsg"=>"OK"]);
                 break;
             case "modify":
-                $ret = $user->modifyUser();
-                if(!$ret) $this->responseJsonData(["errcode"=>1, "errmsg"=>"fail to modify user"]);
+                $AA = $A->modifyUser();
+                if(!$AA) $this->responseJsonData(["errcode"=>1, "errmsg"=>"fail to modify user"]);
                 else $this->responseJsonData(["errcode"=>0, "errmsg"=>"OK"]);
                 break;
             case "remove":
-                $ret = $user->removeUser();
-                if(!$ret) $this->responseJsonData(["errcode"=>1, "errmsg"=>"fail to remove user"]);
+                $AA = $A->removeUser();
+                if(!$AA) $this->responseJsonData(["errcode"=>1, "errmsg"=>"fail to remove user"]);
                 else $this->responseJsonData(["errcode"=>0, "errmsg"=>"OK"]);
                 break;
             case "list":
-                $users = $user->getUsersWithPages();
-                $this->responseJsonData($users);
+                $AF = $A->getUsersWithPages();
+                $this->responseJsonData($AF);
                 break;
         }
     }

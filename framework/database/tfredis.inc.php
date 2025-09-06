@@ -1,73 +1,77 @@
-<?php
+<?php 
 
 namespace tfphp\framework\database;
 
 use tfphp\framework\tfphp;
 
 class tfredis{
-    private tfphp $tfphp;
-    private array $params;
-    private bool $ready;
-    private \Redis $redis;
-    public function __construct(tfphp $A, array $A0){
-        $this->tfphp = $A;
-        $this->params = $A0;
-        $this->ready = false;
+    private tfphp $A;
+    private array $A4;
+    private bool $A5;
+    private \Redis $A7;
+    public function __construct(tfphp $AB, array $AE){
+        $this->A = $AB;
+        $this->A4 = $AE;
+        $this->A5 = false;
     }
-    private function readyTest(){
-        if(!$this->ready){
-            $this->ready = true;
-            if(!$this->params["host"]) $this->params["host"] = "localhost";
-            if(!$this->params["port"]) $this->params["port"] = 6379;
-            if(!$this->params["password"]) $this->params["password"] = "";
-            if(!$this->params["timeout"]) $this->params["timeout"] = 0.0;
-            $this->redis = new \Redis();
-            $this->redis->connect($this->params["host"], $this->params["port"], $this->params["timeout"]);
-            $this->redis->auth($this->params["password"]);
+    private function B7(){
+        if(!$this->A5){
+            $this->A5 = true;
+            if(empty($this->A4['host'])) $this->A4["host"] = "localhost";
+            if(empty($this->A4['port'])) $this->A4["port"] = 6379;
+            if(empty($this->A4['password'])) $this->A4["password"] = "";
+            if(empty($this->A4['timeout'])) $this->A4["timeout"] = 0.0;
+            $this->A7 = new \Redis();
+            $this->A7->connect($this->A4["host"], $this->A4["port"], $this->A4["timeout"]);
+            $this->A7->auth($this->A4["password"]);
         }
     }
-    public function setObject(string $AA, $AE): bool{
-        $this->readyTest();
-        $AE = serialize($AE);
-        if($AE === false){
+    public function setObject(string $BA, $BF): bool{
+        $this->B7();
+        $BF = serialize($BF);
+        if($BF === false){
             return false;
         }
-        $B3 = $this->redis->set($AA, $AE) ;
-        if($B3 === false){
-            return false;
-        }
-        return true;
-    }
-    public function getObject(string $AA){
-        $this->readyTest();
-        $AE = $this->redis->get($AA);
-        if($AE === false){
-            return false;
-        }
-        $AE = unserialize($AE) ;
-        if($AE === false){
-            return false;
-        }
-        return $AE;
-    }
-    public function expire(string $AA, int $B8): bool{
-        $this->readyTest();
-        $B3 = $this->redis->expire($AA, $B8);
-        if($B3 === false){
+        $C4 = $this->A7->set($BA, $BF);
+        if($C4 === false){
             return false;
         }
         return true;
     }
-    public function delete(string $AA): bool{
-        $this->readyTest();
-        $B3 = $this->redis->del($AA);
-        if(!$B3){
+    public function getObject(string $BA){
+        $this->B7();
+        $BF = $this->A7->get($BA);
+        if($BF === false){
+            return false;
+        }
+        $BF = unserialize($BF);
+        if($BF === false){
+            return false;
+        }
+        return $BF;
+    }
+    public function keys(string $C9): array{
+        $this->B7();
+        return $this->A7->keys($C9);
+    }
+    public function expire(string $BA, int $CA): bool{
+        $this->B7();
+        $C4 = $this->A7->expire($BA, $CA);
+        if($C4 === false){
+            return false;
+        }
+        return true;
+    }
+    public function delete(string $BA): bool{
+        $this->B7();
+        $C4 = $this->A7->del($BA);
+        if(!$C4){
             return false;
         }
         return true;
     }
     public function getRedis(): \Redis{
-        $this->readyTest();
-        return $this->redis;
+        $this->B7();
+        return $this->A7;
     }
 }

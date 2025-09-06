@@ -1,10 +1,11 @@
-<?php
+<?php 
 
 namespace tfphp;
 
 use tfphp\framework\tfphp;
 
 define("TFPHP_DOCUMENT_ROOT", __DIR__);
+define("TFPHP_DEBUG", true);
 require "./framework/tfphp.inc.php";
 class index{
     public function getStaticRoutes(): array{

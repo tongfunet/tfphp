@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace tfphp\framework\system;
 
@@ -10,17 +10,35 @@ class tfapi {
     public function __construct(tfphp $A){
         $this->tfphp = $A;
     }
-    protected function responseJsonData($A3, $A4=null){
-        $this->tfphp->getResponse()->responseJsonData($A3, $A4);
+    protected function responseJSONData($A1, $A7=null){
+        $this->tfphp->getResponse()->responseJSONData($A1, $A7);
     }
-    protected function responseHtmlData($A3, string $A4=null){
-        $this->tfphp->getResponse()->responseHtmlData($A3, $A4);
+    protected function JSONData($A1, $A7=null){
+        $this->responseJSONData($A1, $A7);
     }
-    protected function responsePlaintextData($A3, string $A4=null){
-        $this->tfphp->getResponse()->responsePlaintextData($A3, $A4);
+    protected function JSON(int $AA, $A1, string $A7=null){
+        $this->tfphp->getResponse()->JSON($AA, $A1, $A7);
     }
-    protected function location(string $A6){
-        $this->tfphp->getResponse()->location($A6);
+    protected function responseHTMLData($A1, string $A7=null){
+        $this->tfphp->getResponse()->responseHTMLData($A1, $A7);
+    }
+    protected function HTMLData($A1, string $A7=null){
+        $this->responseHTMLData($A1, $A7);
+    }
+    protected function HTML(int $AA, $A1, string $A7=null){
+        $this->tfphp->getResponse()->HTML($AA, $A1, $A7);
+    }
+    protected function responsePlainTextData($A1, string $A7=null){
+        $this->tfphp->getResponse()->responsePlainTextData($A1, $A7);
+    }
+    protected function PlainTextData($A1, string $A7=null){
+        $this->responsePlainTextData($A1, $A7);
+    }
+    protected function PlainText(int $AA, $A1, string $A7=null){
+        $this->tfphp->getResponse()->PlainText($AA, $A1, $A7);
+    }
+    protected function location(string $AD){
+        $this->tfphp->getResponse()->location($AD);
     }
     protected function onLoad(){
 

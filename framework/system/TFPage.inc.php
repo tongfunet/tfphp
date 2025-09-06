@@ -1,4 +1,4 @@
-<?php
+<?php 
 
 namespace tfphp\framework\system;
 
@@ -12,8 +12,8 @@ class tfpage {
         $this->tfphp = $A;
         $this->view = new tfview($A);
     }
-    public function location(string $A3){
-        $this->tfphp->getResponse()->location($A3);
+    public function location(string $A8){
+        $this->tfphp->getResponse()->location($A8);
     }
     protected function onLoad(){
 

@@ -1,22 +1,20 @@
-<?php
+<?php 
 
 namespace tfphp\controller\api\tfdaoManyToMany;
 
 use tfphp\framework\system\tfapi;
 use tfphp\model\article as articleModel;
 
-class article extends tfapi {
-    private function var_dump_test(string $title, $var){
-        echo "<h3>". $title. "</h3>";
-        echo "<pre>";
-        var_dump($var);
-        echo "</pre>";
+class article extends tfapi{
+    private function A(string $A0, $A3){
+        echo "<h3>". $A0. "</h3>";
+        echo "<pre>". json_encode($A3). "</pre>";
     }
     protected function onLoad(){
-        $articleModel = new articleModel($this->tfphp);
-        $results = $articleModel->tfdaoManyToManyCRUD();
-        foreach ($results as $result){
-            $this->var_dump_test($result[0], $result[1]);
+        $A8 = new articleModel($this->tfphp);
+        $AF = $A8->tfdaoManyToManyCRUD();
+        foreach ($AF as $B4){
+            $this->A($B4[0], $B4[1]);
         }
     }
 }
