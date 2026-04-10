@@ -103,3 +103,7 @@
 * [v0.6.7] Changed the return of null for 'tfdao', 'tfdao Single', 'tfdaoOneToOne', 'tfdaoOneToMan', 'tfdaoAnyToMan' methods related to 'Man' and 'All' methods to an empty array.
 * [v0.6.7] Added the 'setOrders' method to the' tfdaoSngle 'class to set the sorting of query data.
 * [v0.6.7] Added the 'setOrders' method to the' tfdaoOneToOne 'class to set the sorting of query data.
+
+## [v0.6.8] - 2025-03-06
+
+* [v0.6.8] Switch the project license from MIT to Apache License 2.0
