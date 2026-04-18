@@ -1,4 +1,4 @@
-<h1 align="center">TFPHP v0.6.7</h1>
+<h1 align="center">TFPHP v0.7.1</h1>
 
 # TFPHP
 
@@ -140,4 +140,4 @@ class user extends tfrestfulAPI {
 
 ## License
 
-The TFPHP framework is licensed under the <a href="https://opensource.org/licenses/MIT">MIT license</a>.
+The TFPHP framework is licensed under the <a href="http://www.apache.org/licenses/LICENSE-2.0.txt">Apache 2.0 license</a>.
