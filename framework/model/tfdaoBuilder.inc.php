@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\model;
 
@@ -6,53 +11,53 @@ use tfphp\framework\tfphp;
 
 class tfdaoBuilder{
     protected tfphp $tfphp;
-    public function __construct(tfphp $A){
-        $this->tfphp = $A;
+    public function __construct(tfphp $tfphp){
+        $this->tfphp = $tfphp;
     }
-    private function A3(string $A5, string $A7, string $AC, string $AF, string $B1, array $B5, array $B6, ?string $BC){
-        $C1 = "";
-        foreach ($B5 as $C4 => $C5){
-            $CB = "";
-            foreach ($C5 as $D0 => $D5){
-                if($D0[0] == '@'){
-                    $CB .= sprintf('"%s"=>%s,', substr($D0, 1), $D5);
+    private function makeClassCode(string $dsName, string $dsNameForPath, string $dbName, string $tableName, string $tableNameForPath, array $fields, array $constraints, ?string $autoIncrementField){
+        $fieldsCode = "";
+        foreach ($fields as $fieldName => $fieldParams){
+            $fieldParamsCode = "";
+            foreach ($fieldParams as $paramName => $paramValue){
+                if($paramName[0] == '@'){
+                    $fieldParamsCode .= sprintf('"%s"=>%s,', substr($paramName, 1), $paramValue);
                 }
                 else{
-                    $CB .= sprintf('"%s"=>\"%s\",', $D0, $D5);
+                    $fieldParamsCode .= sprintf('"%s"=>\"%s\",', $paramName, $paramValue);
                 }
             }
-            if($CB != ""){
-                $CB = substr($CB, 0, -1);
+            if($fieldParamsCode != ""){
+                $fieldParamsCode = substr($fieldParamsCode, 0, -1);
             }
-            $C1 .= sprintf('                "%s"=>[%s],', $C4, $CB). "\n";
+            $fieldsCode .= sprintf('                "%s"=>[%s],', $fieldName, $fieldParamsCode). "\n";
         }
-        if($C1 != ""){
-            $C1 = substr($C1, 0, -2);
+        if($fieldsCode != ""){
+            $fieldsCode = substr($fieldsCode, 0, -2);
         }
-        $D6 = "";
-        foreach ($B6 as $DC => $E1){
-            $E3 = "";
-            foreach ($E1 as $E4){
-                $E3 .= sprintf('"%s",', $E4);
+        $constraintsCode = "";
+        foreach ($constraints as $constraintName => $constraintFields){
+            $constraintFieldsCode = "";
+            foreach ($constraintFields as $constraintField){
+                $constraintFieldsCode .= sprintf('"%s",', $constraintField);
             }
-            if($E3 != ""){
-                $E3 = substr($E3, 0, -1);
+            if($constraintFieldsCode != ""){
+                $constraintFieldsCode = substr($constraintFieldsCode, 0, -1);
             }
-            $D6 .= sprintf('                "%s"=>[%s],', $DC, $E3). "\n";
+            $constraintsCode .= sprintf('                "%s"=>[%s],', $constraintName, $constraintFieldsCode). "\n";
         }
-        if($D6 != ""){
-            $D6 = substr($D6, 0, -2);
-            $D6 = ",\n". sprintf('            "constraints"=>[
+        if($constraintsCode != ""){
+            $constraintsCode = substr($constraintsCode, 0, -2);
+            $constraintsCode = ",\n". sprintf('            "constraints"=>[
 %s
-            ]', $D6);
+            ]', $constraintsCode);
         }
-        $E8 = "";
-        if($BC){
-            $E8 = ",\n". sprintf('            "autoIncrementField"=>"%s"', $BC);
+        $autoIncrementCode = "";
+        if($autoIncrementField){
+            $autoIncrementCode = ",\n". sprintf('            "autoIncrementField"=>"%s"', $autoIncrementField);
         }
-        $EC = "";
-        if($A5){
-            $EC .= ",\n". sprintf('            "dataSource"=>"%s"', $A5);
+        $dataSourceCode = "";
+        if($dsName){
+            $dataSourceCode .= ",\n". sprintf('            "dataSource"=>"%s"', $dsName);
         }
         return sprintf('<?php
 
@@ -71,86 +76,86 @@ class %s extends tfdaoSingle{
             ]%s%s%s
         ]);
     }
-}', "\\". $A7, $B1, $AF, $C1, $D6, $E8, $EC);
+}', "\\". $dsNameForPath, $tableNameForPath, $tableName, $fieldsCode, $constraintsCode, $autoIncrementCode, $dataSourceCode);
     }
-    public function build(string $F0): ?array{
-        $A5 = ($F0) ? $F0 : "default";
-        $A7 = ($A5 == "default") ? "__". $A5. "__" : $A5;
-        $F4 = $this->tfphp->getConfig()["database"][$A5];
-        $F7 = $this->tfphp->getDataSource($A5);
-        if(!$F7){
+    public function build(string $dataSource): ?array{
+        $dsName = ($dataSource) ? $dataSource : "default";
+        $dsNameForPath = ($dsName == "default") ? "__". $dsName. "__" : $dsName;
+        $cfg = $this->tfphp->getConfig()["database"][$dsName];
+        $dbs = $this->tfphp->getDataSource($dsName);
+        if(!$dbs){
             return null;
         }
-        $F9 = $F7->fetchAll("show tables", []);
-        $FF = [];
-        foreach ($F9 as $A03){
-            foreach ($A03 as $A08 => $A0A){
-                if(substr($A08, 0, 10) == "Tables_in_"){
-                    $AC = substr($A08, 10);
-                    $AF = $A0A;
-                    $B1 = (isset($F4["table_prefix"]) && $F4["table_prefix"] && strpos($AF, $F4["table_prefix"]) === 0) ? substr($AF, strlen($F4["table_prefix"])) : $AF;
-                    $B5 = [];
-                    $B6 = [];
-                    $BC = null;
-                    $A0D = $F7->fetchAll("show create table `". $AF. "`", []);
-                    $A13 = $A0D[0];
-                    $A17 = $A13["Table"];
-                    $A1C = $A13["Create Table"];
-                    $A1D = explode("\n", $A1C);
-                    for($A20=0;$A20<count($A1D);$A20++){
-                        $A21 = $A1D[$A20];
-                        if(preg_match("/^[\s\t]*\`([^\`]+)\`[\s\t]*([a-z0-9]+)/", $A21, $A22)){
-                            $C4 = $A22[1];
-                            $A28 = $A22[2];
-                            $A2E = false;
-                            if(preg_match("/^(tinyint|smallint|mediumint|int|bigint)/i", $A28)){
-                                $A28 = "tfdao::FIELD_TYPE_INT";
-                                if(preg_match("/[\s\t]AUTO_INCREMENT[\s\t\r\n,]/", $A21)){
-                                    $A2E = true;
-                                    $BC = $C4;
+        $tableInfos = $dbs->fetchAll("show tables", []);
+        $result = [];
+        foreach ($tableInfos as $tableInfo){
+            foreach ($tableInfo as $field => $value){
+                if(substr($field, 0, 10) == "Tables_in_"){
+                    $dbName = substr($field, 10);
+                    $tableName = $value;
+                    $tableNameForPath = (isset($cfg["table_prefix"]) && $cfg["table_prefix"] && strpos($tableName, $cfg["table_prefix"]) === 0) ? substr($tableName, strlen($cfg["table_prefix"])) : $tableName;
+                    $fields = [];
+                    $constraints = [];
+                    $autoIncrementField = null;
+                    $createTableInfos = $dbs->fetchAll("show create table `". $tableName. "`", []);
+                    $createTableInfo = $createTableInfos[0];
+                    $createTableName = $createTableInfo["Table"];
+                    $createTableSQL = $createTableInfo["Create Table"];
+                    $createTableSQLLines = explode("\n", $createTableSQL);
+                    for($i=0;$i<count($createTableSQLLines);$i++){
+                        $createTableSQLLine = $createTableSQLLines[$i];
+                        if(preg_match("/^[\s\t]*\`([^\`]+)\`[\s\t]*([a-z0-9]+)/", $createTableSQLLine, $rg)){
+                            $fieldName = $rg[1];
+                            $fieldType = $rg[2];
+                            $autoIncrement = false;
+                            if(preg_match("/^(tinyint|smallint|mediumint|int|bigint)/i", $fieldType)){
+                                $fieldType = "tfdao::FIELD_TYPE_INT";
+                                if(preg_match("/[\s\t]AUTO_INCREMENT[\s\t\r\n,]/", $createTableSQLLine)){
+                                    $autoIncrement = true;
+                                    $autoIncrementField = $fieldName;
                                 }
                             }
                             else{
-                                $A28 = "tfdao::FIELD_TYPE_STR";
+                                $fieldType = "tfdao::FIELD_TYPE_STR";
                             }
-                            $A30 = false;
-                            if(preg_match("/[\s\t]+not[\s\t]+null/i", $A21) && !preg_match("/[\s\t]+default[\s\t]+/i", $A21) && !$A2E){
-                                $A30 = true;
+                            $required = false;
+                            if(preg_match("/[\s\t]+not[\s\t]+null/i", $createTableSQLLine) && !preg_match("/[\s\t]+default[\s\t]+/i", $createTableSQLLine) && !$autoIncrement){
+                                $required = true;
                             }
-                            $B5[$C4] = ["@type"=>$A28];
-                            if($A30){
-                                $B5[$C4]["@required"] = "true";
+                            $fields[$fieldName] = ["@type"=>$fieldType];
+                            if($required){
+                                $fields[$fieldName]["@required"] = "true";
                             }
                         }
-                        else if(preg_match("/^[\s\t]*(PRIMARY KEY|UNIQUE KEY|KEY)?([^\(]+)\(([^\)]+)\)/", $A21, $A22)){
-                            $A33 = trim($A22[1]);
-                            if(!in_array($A33, ["KEY"])){
-                                $DC = str_replace("`", "", trim($A22[2]));
-                                if($DC == ""){
-                                    $DC = "default";
+                        else if(preg_match("/^[\s\t]*(PRIMARY KEY|UNIQUE KEY|KEY)?([^\(]+)\(([^\)]+)\)/", $createTableSQLLine, $rg)){
+                            $constraintType = trim($rg[1]);
+                            if(!in_array($constraintType, ["KEY"])){
+                                $constraintName = str_replace("`", "", trim($rg[2]));
+                                if($constraintName == ""){
+                                    $constraintName = "default";
                                 }
-                                $E1 = explode(",", str_replace("`", "", $A22[3]));
-                                $B6[$DC] = $E1;
+                                $constraintFields = explode(",", str_replace("`", "", $rg[3]));
+                                $constraints[$constraintName] = $constraintFields;
                             }
                         }
                     }
-                    $this->A3($A5, $A7, $AC, $AF, $B1, $B5, $B6, $BC);
-                    $A39 = TFPHP_DOCUMENT_ROOT. "/model/dao/". $A7. "/". $B1. ".inc.php";
-                    $A3F = dirname($A39);
-                    $A42 = true;
-                    if(!file_exists($A3F)){
-                        $A42 = mkdir($A3F, 0777, true);
+                    $this->makeClassCode($dsName, $dsNameForPath, $dbName, $tableName, $tableNameForPath, $fields, $constraints, $autoIncrementField);
+                    $classFilepath = TFPHP_DOCUMENT_ROOT. "/model/dao/". $dsNameForPath. "/". $tableNameForPath. ".inc.php";
+                    $classDirpath = dirname($classFilepath);
+                    $mkdirRet = true;
+                    if(!file_exists($classDirpath)){
+                        $mkdirRet = mkdir($classDirpath, 0777, true);
                     }
-                    $A46 = file_put_contents($A39, $this->A3($A5, $A7, $AC, $AF, $B1, $B5, $B6, $BC));
-                    $FF[] = [
-                        "ds"=>$A5,
-                        "db"=>$AC,
-                        "table"=>$AF,
-                        "result"=>($A42 && $A46 > 0)
+                    $writeFileRet = file_put_contents($classFilepath, $this->makeClassCode($dsName, $dsNameForPath, $dbName, $tableName, $tableNameForPath, $fields, $constraints, $autoIncrementField));
+                    $result[] = [
+                        "ds"=>$dsName,
+                        "db"=>$dbName,
+                        "table"=>$tableName,
+                        "result"=>($mkdirRet && $writeFileRet > 0)
                     ];
                 }
             }
         }
-        return $FF;
+        return $result;
     }
 }

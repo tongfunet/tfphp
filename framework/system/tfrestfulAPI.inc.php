@@ -1,33 +1,36 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\system;
 
-use tfphp\framework\system\server\tfresponse;
 use tfphp\framework\tfphp;
 
-class tfrestfulAPI {
-    protected tfphp $tfphp;
-    public function __construct(tfphp $A){
-        $this->tfphp = $A;
+class tfrestfulAPI extends tfsystem {
+    public function __construct(tfphp $tfphp){
+        parent::__construct($tfphp);
     }
-    protected function responseJSONData($A1, $A4=null){
-        $this->tfphp->getResponse()->responseJSONData($A1, $A4);
+    protected function responseJSONData($data, $dataCharset=null){
+        $this->tfphp->getResponse()->responseJSONData($data, $dataCharset);
     }
-    protected function JSONData($A1, $A4=null){
-        $this->responseJSONData($A1, $A4);
+    protected function JSONData($data, $dataCharset=null){
+        $this->responseJSONData($data, $dataCharset);
     }
-    protected function JSON(int $AA, $A1, string $A4=null){
-        $this->tfphp->getResponse()->JSON($AA, $A1, $A4);
+    protected function JSON(int $statusCode, $data, string $dataCharset=null){
+        $this->tfphp->getResponse()->JSON($statusCode, $data, $dataCharset);
     }
-    protected function location(string $AC){
-        $this->tfphp->getResponse()->location($AC);
+    protected function location(string $url){
+        $this->tfphp->getResponse()->location($url);
     }
     protected function onLoad(){
-        $B2 = strtoupper($_SERVER["REQUEST_METHOD"]);
-        $B6 = $this->tfphp->getRequest()->getResourceFunction();
-        if($B6 != "" && method_exists($this, "on_". $B6)) call_user_func_array([$this, "on_". $B6], []);
-        else if($B6 != "" && method_exists($this, "on". $B2. "_". $B6)) call_user_func_array([$this, "on". $B2. "_". $B6], []);
-        else if(method_exists($this, "on". $B2)) call_user_func_array([$this, "on". $B2], []);
+        $reqMethod = strtoupper($_SERVER["REQUEST_METHOD"]);
+        $resFunction = $this->tfphp->getRequest()->getResourceFunction();
+        if($resFunction != "" && method_exists($this, "on_". $resFunction)) call_user_func_array([$this, "on_". $resFunction], []);
+        else if($resFunction != "" && method_exists($this, "on". $reqMethod. "_". $resFunction)) call_user_func_array([$this, "on". $reqMethod. "_". $resFunction], []);
+        else if(method_exists($this, "on". $reqMethod)) call_user_func_array([$this, "on". $reqMethod], []);
         else $this->onLoadCustom();
     }
     protected function onLoadCustom(){

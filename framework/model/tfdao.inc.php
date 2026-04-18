@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\model;
 
@@ -16,44 +21,23 @@ abstract class tfdao{
     const FIELD_TYPE_INT = 1;
     const FIELD_TYPE_STR = 2;
     protected tfphp $tfphp;
-    public function __construct(tfphp $AE){
-        $this->tfphp = $AE;
+    public function __construct(tfphp $tfphp){
+        $this->tfphp = $tfphp;
     }
 
-    public function select(array $B0): ?array{
-        return null;
-    }
-    public function constraintSelect(array $B2, string $B5="default"): ?array{
-        return null;
-    }
-    public function keySelect(array $B2, string $B5="default"): ?array{
-        return null;
-    }
-    public function sqlWhereSelect(string $B7, array $B2, array $BC=null): ?array{
+    public function select(array $query): ?array{
         return null;
     }
 
-    public function insert(array $BE, array $BC=null): bool{
+    public function insert(array $data, array $options=null): bool{
         return false;
     }
 
-    public function update(array $B0, array $BE, array $BC=null): bool{
-        return false;
-    }
-    public function constraintUpdate(array $B2, array $BE, string $B5="default", array $BC=null): bool{
-        return false;
-    }
-    public function keyUpdate(array $B2, array $BE, string $B5="default", array $BC=null): bool{
+    public function update(array $query, array $data, array $options=null): bool{
         return false;
     }
 
-    public function delete(array $B0): bool{
-        return false;
-    }
-    public function constraintDelete(array $B2, string $B5="default"): bool{
-        return false;
-    }
-    public function keyDelete(array $B2, string $B5="default"): bool{
+    public function delete(array $query): bool{
         return false;
     }
 

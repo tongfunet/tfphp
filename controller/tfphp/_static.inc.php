@@ -5,58 +5,58 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-namespace tfphp\framework\controller\tfphp;
+namespace tfphp\controller\tfphp;
 
 use tfphp\framework\system\tfapi;
 
-class _static extends tfapi {
+class _static extends tfapi{
     protected function onLoad(){
         $resp = $this->tfphp->getResponse();
-        $filepath = $_SERVER["RESOURCE_NAME"];
-        $extension = $_SERVER["RESOURCE_EXTENSION"];
-        $mimeType = "";
-        switch ($extension){
+        $resName = $_SERVER["RESOURCE_NAME"];
+        $resExt = $_SERVER["RESOURCE_EXTENSION"];
+        $contentType = "";
+        switch ($resExt){
             case "css":
-                $mimeType = "text/css";
+                $contentType = "text/css";
                 break;
             case "js":
-                $mimeType = "text/javascript";
+                $contentType = "text/javascript";
                 break;
             case "json":
-                $mimeType = "application/json";
+                $contentType = "application/json";
                 break;
             case "xml":
-                $mimeType = "text/xml";
+                $contentType = "text/xml";
                 break;
             case "jpg":
             case "jpeg":
-                $mimeType = "image/jpeg";
+                $contentType = "image/jpeg";
                 break;
             case "png":
-                $mimeType = "image/png";
+                $contentType = "image/png";
                 break;
             case "gif":
-                $mimeType = "image/gif";
+                $contentType = "image/gif";
                 break;
             case "txt":
-                $mimeType = "text/plaintext";
+                $contentType = "text/plaintext";
                 break;
             case "ico":
-                $mimeType = "image/x-icon";
+                $contentType = "image/x-icon";
                 break;
         }
-        if(!file_exists($filepath)){
+        if(!file_exists($resName)){
             $resp->setStatusCode(404);
             $resp->response();
         }
-        else if(!$mimeType){
+        else if(!$contentType){
             $resp->setStatusCode(403);
             $resp->response();
         }
         else{
             header("HTTP/1.1 200 OK");
-            header("Content-Type: ". $mimeType);
-            echo file_get_contents($filepath);
+            header("Content-Type: ". $contentType);
+            echo file_get_contents($resName);
         }
     }
 }

@@ -5,13 +5,16 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-namespace tfphp\framework\controller;
+namespace tfphp\plugin;
 
+use tfphp\framework\system\tfplugin;
 use tfphp\framework\tfphp;
 
-class tfcontroller{
-    protected tfphp $tfphp;
+class security extends tfplugin {
     public function __construct(tfphp $tfphp){
-        $this->tfphp = $tfphp;
+        parent::__construct($tfphp);
+    }
+    public function test(){
+
     }
 }

@@ -1,44 +1,47 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\system;
 
-use tfphp\framework\system\server\tfresponse;
 use tfphp\framework\tfphp;
 
-class tfapi {
-    protected tfphp $tfphp;
-    public function __construct(tfphp $A){
-        $this->tfphp = $A;
+class tfapi extends tfsystem {
+    public function __construct(tfphp $tfphp){
+        parent::__construct($tfphp);
     }
-    protected function responseJSONData($A1, $A7=null){
-        $this->tfphp->getResponse()->responseJSONData($A1, $A7);
+    protected function responseJSONData($data, $dataCharset=null){
+        $this->tfphp->getResponse()->responseJSONData($data, $dataCharset);
     }
-    protected function JSONData($A1, $A7=null){
-        $this->responseJSONData($A1, $A7);
+    protected function JSONData($data, $dataCharset=null){
+        $this->responseJSONData($data, $dataCharset);
     }
-    protected function JSON(int $AA, $A1, string $A7=null){
-        $this->tfphp->getResponse()->JSON($AA, $A1, $A7);
+    protected function JSON(int $statusCode, $data, string $dataCharset=null){
+        $this->tfphp->getResponse()->JSON($statusCode, $data, $dataCharset);
     }
-    protected function responseHTMLData($A1, string $A7=null){
-        $this->tfphp->getResponse()->responseHTMLData($A1, $A7);
+    protected function responseHTMLData($data, string $dataCharset=null){
+        $this->tfphp->getResponse()->responseHTMLData($data, $dataCharset);
     }
-    protected function HTMLData($A1, string $A7=null){
-        $this->responseHTMLData($A1, $A7);
+    protected function HTMLData($data, string $dataCharset=null){
+        $this->responseHTMLData($data, $dataCharset);
     }
-    protected function HTML(int $AA, $A1, string $A7=null){
-        $this->tfphp->getResponse()->HTML($AA, $A1, $A7);
+    protected function HTML(int $statusCode, $data, string $dataCharset=null){
+        $this->tfphp->getResponse()->HTML($statusCode, $data, $dataCharset);
     }
-    protected function responsePlainTextData($A1, string $A7=null){
-        $this->tfphp->getResponse()->responsePlainTextData($A1, $A7);
+    protected function responsePlainTextData($data, string $dataCharset=null){
+        $this->tfphp->getResponse()->responsePlainTextData($data, $dataCharset);
     }
-    protected function PlainTextData($A1, string $A7=null){
-        $this->responsePlainTextData($A1, $A7);
+    protected function PlainTextData($data, string $dataCharset=null){
+        $this->responsePlainTextData($data, $dataCharset);
     }
-    protected function PlainText(int $AA, $A1, string $A7=null){
-        $this->tfphp->getResponse()->PlainText($AA, $A1, $A7);
+    protected function PlainText(int $statusCode, $data, string $dataCharset=null){
+        $this->tfphp->getResponse()->PlainText($statusCode, $data, $dataCharset);
     }
-    protected function location(string $AD){
-        $this->tfphp->getResponse()->location($AD);
+    protected function location(string $url){
+        $this->tfphp->getResponse()->location($url);
     }
     protected function onLoad(){
 

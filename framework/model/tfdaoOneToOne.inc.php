@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\model;
 
@@ -10,298 +15,318 @@ use tfphp\framework\tfphp;
  * @package tfphp\framework\model
  * @datetime 2025/7/18
  */
-class tfdaoOneToOne extends tfdao{
-    private array $A;
-    private ?string $D;
+class tfdaoOneToOne extends tfdao {
+    private array $methodChainingParams;
+    private ?string $lastError;
     protected array $tables;
     protected array $relationParams;
     protected ?array $options;
-    public function __construct(tfphp $AA, array $A1, array $A5, array $A8=null){
-        parent::__construct($AA);
-        $this->A = [];
-        $this->D = null;
-        $this->tables = $A1;
-        $this->relationParams = $A5;
-        $this->options = $A8;
+    public function __construct(tfphp $tfphp, array $tables, array $relationParams, array $options=null){
+        parent::__construct($tfphp);
+        $this->methodChainingParams = [];
+        $this->lastError = null;
+        $this->tables = $tables;
+        $this->relationParams = $relationParams;
+        $this->options = $options;
         if(count($this->tables) < 2){
-            throw new \Exception("the number of tables must be at least 2");
+            throw new \Exception("the number of tables must be at least 2", 660401);
         }
         if((count($this->tables) - count($this->relationParams)) != 1){
-            throw new \Exception("the number of relation parameters must be one more than the number of tables");
+            throw new \Exception("the number of relation parameters must be one more than the number of tables", 660402);
         }
-        foreach ($this->relationParams as $AE => $B2){
-            if(!isset($this->relationParams[$AE]["type"])) $this->relationParams[$AE]["type"] = tfdao::RELATION_PARAM_TYPE_ARRAY;
-            switch ($this->relationParams[$AE]["type"]){
+        foreach ($this->relationParams as $k => $relationParam){
+            if(!isset($this->relationParams[$k]["type"])) $this->relationParams[$k]["type"] = tfdao::RELATION_PARAM_TYPE_ARRAY;
+            switch ($this->relationParams[$k]["type"]){
                 case tfdao::RELATION_PARAM_TYPE_ARRAY:
-                    if(!isset($B2["mapping"]) || !is_array($B2["mapping"])){
-                        throw new \Exception("the relation parameter ". $AE. " is of type array and require 'mapping' param");
+                    if(!isset($relationParam["mapping"]) || !is_array($relationParam["mapping"])){
+                        throw new \Exception("the relation parameter ". $k. " is of type array and require 'mapping' param", 660403);
                     }
                     break;
                 case tfdao::RELATION_PARAM_TYPE_SQL:
-                    if(empty($B2["sql"])){
-                        throw new \Exception("the relation parameter ". $AE. " is of type array and require 'sql' param");
+                    if(empty($relationParam["sql"])){
+                        throw new \Exception("the relation parameter ". $k. " is of type array and require 'sql' param", 660404);
                     }
-                    preg_match_all("/a\.([a-zA-Z0-9\_\-]+)[\s\t\r\n]*\=[\s\t\r\n]*b\.([a-zA-Z0-9\_\-]+)/", $B2["sql"], $B6);
-                    $this->relationParams[$AE]["mapping"] = [];
-                    foreach ($B6[1] as $BA => $BF){
-                        $this->relationParams[$AE]["mapping"][$BF] = $B6[2][$BA];
-                        $this->relationParams[$AE]["sql"] = str_replace("a.". $BF, "?", $this->relationParams[$AE]["sql"]);
+                    preg_match_all("/a\.([a-zA-Z0-9\_\-]+)[\s\t\r\n]*\=[\s\t\r\n]*b\.([a-zA-Z0-9\_\-]+)/", $relationParam["sql"], $rgs);
+                    $this->relationParams[$k]["mapping"] = [];
+                    foreach ($rgs[1] as $m => $v){
+                        $this->relationParams[$k]["mapping"][$v] = $rgs[2][$m];
+                        $this->relationParams[$k]["sql"] = str_replace("a.". $v, "?", $this->relationParams[$k]["sql"]);
                     }
                     break;
                 default:
-                    throw new \Exception("invalid type of relation parameter");
+                    throw new \Exception("invalid type of relation parameter", 660405);
             }
         }
     }
-    private function C1(array $C4, array $A8=null): ?array{
-        foreach ($this->tables as $AE => $C6){
-            if($AE == 0) continue;
-            $CA = null;
-            $B2 = $this->relationParams[$AE-1];
-            switch ($B2["type"]){
+    private function cycleSelect(array $data, array $options=null): ?array{
+        foreach ($this->tables as $k => $table){
+            if($k == 0) continue;
+            $curData = null;
+            $relationParam = $this->relationParams[$k-1];
+            switch ($relationParam["type"]){
                 case tfdao::RELATION_PARAM_TYPE_ARRAY:
-                    $CB = [];
-                    foreach ($B2["mapping"] as $CD => $D0) $CB[$D0] = $C4[$CD];
-                    $CA = $C6->select($CB, $A8);
+                    $query = [];
+                    foreach ($relationParam["mapping"] as $fieldA => $fieldB) $query[$fieldB] = $data[$fieldA];
+                    $curData = $table->select($query, $options);
                     break;
                 case tfdao::RELATION_PARAM_TYPE_SQL:
-                    $D1 = [];
-                    foreach ($B2["mapping"] as $CD => $D0) $D1[] = $C4[$CD];
-                    $CA = $C6->sqlWhereSelect($B2["sql"], $D1, $A8);
+                    $params = [];
+                    foreach ($relationParam["mapping"] as $fieldA => $fieldB) $params[] = $data[$fieldA];
+                    $curData = $table->selectByWhere($relationParam["sql"], $params, $options);
                     break;
             }
-            if($CA === null){
+            if($curData === null){
                 return null;
             }
-            $C4 = ($C4 === null) ? $CA : array_merge($C4, $CA);
+            $data = ($data === null) ? $curData : array_merge($data, $curData);
         }
-        return $C4;
+        return $data;
     }
-    private function D5(tfdo $D9, array $C4): bool{
-        foreach ($this->tables as $AE => $C6){
+    private function cycleInsert(tfdo $ds, array $data): bool{
+        foreach ($this->tables as $k => $table){
             try{
-                if(!$C6->insert($C4, ["checkConstraints"=>($AE > 0)])){
-                    $D9->rollback();
+                if(!$table->insert($data)){
+                    $ds->rollback();
                     return false;
                 }
-                if($AE == 0){
-                    if($C6->getAutoIncrementField()) $C4[$C6->getAutoIncrementField()] = $C6->getLastInsertAutoIncrementValue();
+                if($k == 0){
+                    if($table->getAutoIncrementField()) $data[$table->getAutoIncrementField()] = $table->getLastInsertAutoIncrementValue();
                 }
             }
-            catch(\Exception $DE){
-                if(!preg_match("/(no insert items for insert)/", $DE->getMessage())){
-                    throw $DE;
-                }
-            }
-        }
-        return true;
-    }
-    private function E3(tfdo $D9, array $CA, array $C4): bool{
-        foreach ($this->tables as $AE => $C6){
-            try{
-                if($AE == 0) continue;
-                $B2 = $this->relationParams[$AE-1];
-                switch ($B2["type"]){
-                    case tfdao::RELATION_PARAM_TYPE_ARRAY:
-                        $CB = [];
-                        foreach ($B2["mapping"] as $CD => $D0) $CB[$D0] = $CA[$CD];
-                        if(!$C6->update($CB, $C4, [
-                            "skipEmptyUpdateItems"=>true
-                        ])){
-                            $D9->rollback();
-                            return false;
-                        }
-                        break;
-                    case tfdao::RELATION_PARAM_TYPE_SQL:
-                        $D1 = [];
-                        foreach ($B2["mapping"] as $CD => $D0) $D1[] = $CA[$CD];
-                        if(!$C6->sqlWhereUpdateAll($B2["sql"], $D1, $C4, [
-                            "skipEmptyUpdateItems"=>true
-                        ])){
-                            $D9->rollback();
-                            return false;
-                        }
-                        break;
-                }
-            }
-            catch(\Exception $DE){
-                if(!preg_match("/(no update items for update|no condition items for update)/", $DE->getMessage())){
-                    $D9->rollback();
-                    throw $DE;
+            catch(\Exception $e){
+                if(!preg_match("/(no insert items for insert)/", $e->getMessage())){
+                    throw $e;
                 }
             }
         }
         return true;
     }
-    private function E9(tfdo $D9, array $CA): bool{
-        foreach ($this->tables as $AE => $C6){
+    private function cycleUpdate(tfdo $ds, array $curData, array $data): bool{
+        foreach ($this->tables as $k => $table){
             try{
-                if($AE == 0) continue;
-                $B2 = $this->relationParams[$AE-1];
-                switch ($B2["type"]){
+                if($k == 0) continue;
+                $relationParam = $this->relationParams[$k-1];
+                switch ($relationParam["type"]){
                     case tfdao::RELATION_PARAM_TYPE_ARRAY:
-                        $CB = [];
-                        foreach ($B2["mapping"] as $CD => $D0) $CB[$D0] = $CA[$CD];
-                        if(!$C6->delete($CB)){
-                            $D9->rollback();
+                        $query = [];
+                        foreach ($relationParam["mapping"] as $fieldA => $fieldB) $query[$fieldB] = $curData[$fieldA];
+                        if(!$table->update($data, $query)){
+                            $ds->rollback();
                             return false;
                         }
                         break;
                     case tfdao::RELATION_PARAM_TYPE_SQL:
-                        $D1 = [];
-                        foreach ($B2["mapping"] as $CD => $D0) $D1[] = $CA[$CD];
-                        if(!$C6->sqlWhereDelete($B2["sql"], $D1)){
-                            $D9->rollback();
+                        $params = [];
+                        foreach ($relationParam["mapping"] as $fieldA => $fieldB) $params[] = $curData[$fieldA];
+                        if(!$table->updateByWhere($relationParam["sql"], $params, $data)){
+                            $ds->rollback();
+                            return false;
+                        }
+                        break;
+                }
+            }
+            catch(\Exception $e){
+                if(!preg_match("/(no update items for update|no condition items for update)/", $e->getMessage())){
+                    $ds->rollback();
+                    throw $e;
+                }
+            }
+        }
+        return true;
+    }
+    private function cycleDelete(tfdo $ds, array $curData): bool{
+        foreach ($this->tables as $k => $table){
+            try{
+                if($k == 0) continue;
+                $relationParam = $this->relationParams[$k-1];
+                switch ($relationParam["type"]){
+                    case tfdao::RELATION_PARAM_TYPE_ARRAY:
+                        $query = [];
+                        foreach ($relationParam["mapping"] as $fieldA => $fieldB) $query[$fieldB] = $curData[$fieldA];
+                        if(!$table->delete($query)){
+                            $ds->rollback();
+                            return false;
+                        }
+                        break;
+                    case tfdao::RELATION_PARAM_TYPE_SQL:
+                        $params = [];
+                        foreach ($relationParam["mapping"] as $fieldA => $fieldB) $params[] = $curData[$fieldA];
+                        if(!$table->deleteByWhere($relationParam["sql"], $params)){
+                            $ds->rollback();
                             return false;
                         }
                         break;
                     default:
-                        throw new \Exception("invalid type of relation parameter");
+                        throw new \Exception("invalid type of relation parameter", 660406);
                 }
             }
-            catch(\Exception $DE){
-                if(!preg_match("/(no condition items for delete)/", $DE->getMessage())){
-                    $D9->rollback();
-                    throw $DE;
+            catch(\Exception $e){
+                if(!preg_match("/(no condition items for delete)/", $e->getMessage())){
+                    $ds->rollback();
+                    throw $e;
                 }
                 return false;
             }
         }
         return true;
     }
+    private function selectConstraint(array $params, string $constraintName=null, string $sqlWhere=null, array $options=null): ?array{
+        if($options === null) $options = [];
+        $options = array_merge($options, $this->methodChainingParams);
+        $this->methodChainingParams = [];
+        if($constraintName == null){
+            $curData = $this->getTable(0)->select($params, $options);
+        }
+        else if($constraintName == "default"){
+            $curData = $this->getTable(0)->selectByPrimary($params, $options);
+        }
+        else{
+            $curData = $this->getTable(0)->selectByIndex($params, $constraintName, $options);
+        }
+        if($curData === null){
+            return null;
+        }
+        $data = $this->cycleSelect($curData, $options);
+        return $data;
+    }
+    public function updateConstraint(array $data, array $params, string $constraintName=null, array $options=null): bool{
+        $ds = $this->tfphp->getDataSource();
+        $ds->beginTransaction();
+        if($constraintName == null){
+            $curData = $this->select($params);
+        }
+        else if($constraintName == "default"){
+            $curData = $this->selectByPrimary($params);
+        }
+        else{
+            $curData = $this->selectByIndex($params, $constraintName);
+        }
+        if($curData === null){
+            return false;
+        }
+        try{
+            if($constraintName == null){
+                $ret = $this->getTable(0)->update($data, $params);
+            }
+            else if($constraintName == "default"){
+                $ret = $this->getTable(0)->updateByPrimary($data, $params);
+            }
+            else{
+                $ret = $this->getTable(0)->updateByUnique($data, $params, $constraintName);
+            }
+            if(!$ret){
+                return false;
+            }
+        }
+        catch(\Exception $e){
+            if(!preg_match("/(no update items for update|no condition items for update)/", $e->getMessage())){
+                $ds->rollback();
+                throw $e;
+            }
+        }
+        if(!$this->cycleUpdate($ds, $curData, $data)){
+            return false;
+        }
+        $ds->commit();
+        return true;
+    }
+    public function deleteConstraint(array $params, string $constraintName=null): bool{
+        $ds = $this->tfphp->getDataSource();
+        $ds->beginTransaction();
+        if($constraintName == null){
+            $curData = $this->select($params);
+        }
+        else if($constraintName == "default"){
+            $curData = $this->selectByPrimary($params);
+        }
+        else{
+            $curData = $this->selectByIndex($params, $constraintName);
+        }
+        if($curData === null){
+            return false;
+        }
+        if($constraintName == null){
+            $ret = $this->getTable(0)->delete($params);
+        }
+        else if($constraintName == null){
+            $ret = $this->getTable(0)->deleteByPrimary($params);
+        }
+        else{
+            $ret = $this->getTable(0)->deleteByUnique($params, $constraintName);
+        }
+        if(!$ret){
+            return false;
+        }
+        if(!$this->cycleDelete($ds, $curData)){
+            return false;
+        }
+        $ds->commit();
+        return true;
+    }
 
-    public function setFields(array $ED): tfdaoOneToOne{
-        $this->A["selectFields"] = $ED;
+    public function setFields(array $selectFields): tfdaoOneToOne{
+        $this->methodChainingParams["selectFields"] = $selectFields;
         return $this;
     }
-    public function setOrders(array $F0): tfdaoOneToOne{
-        $this->A["fieldOrders"] = $F0;
+    public function setOrders(array $fieldOrders): tfdaoOneToOne{
+        $this->methodChainingParams["fieldOrders"] = $fieldOrders;
         return $this;
     }
 
-    public function select(array $CB, array $A8=null): ?array{
-        if($A8 === null) $A8 = [];
-        $A8 = array_merge($A8, $this->A);
-        $this->A = [];
-        $CA = $this->getTable(0)->select($CB, $A8);
-        if($CA === null){
-            return null;
-        }
-        $C4 = $this->C1($CA, $A8);
-        return $C4;
+    public function select(array $query, array $options=null): ?array{
+        return $this->selectConstraint($query, null, null, $options);
     }
-    public function constraintSelect(array $D1, string $F5="default", array $A8=null): ?array{
-        if($A8 === null) $A8 = [];
-        $A8 = array_merge($A8, $this->A);
-        $this->A = [];
-        $CA = $this->getTable(0)->constraintSelect($D1, $F5, $A8);
-        if($CA === null){
-            return null;
-        }
-        $C4 = $this->C1($CA, $A8);
-        return $C4;
+    public function selectByPrimary(array $params, array $options=null): ?array{
+        return $this->selectConstraint($params, "default", null, $options);
     }
-    public function keySelect(array $D1, string $F5="default", array $A8=null): ?array{
-        return $this->constraintSelect($D1, $F5, $A8);
+    public function selectByUnique(array $params, string $uniqueName, array $options=null): ?array{
+        return $this->selectConstraint($params, $uniqueName, null, $options);
     }
-    public function sqlWhereSelect(string $FB, array $D1, array $A8=null): ?array{
-        if($A8 === null) $A8 = [];
-        $A8 = array_merge($A8, $this->A);
-        $this->A = [];
-        $CA = $this->getTable(0)->sqlWhereSelect($FB, $D1, $A8);
-        if($CA === null){
-            return null;
-        }
-        $C4 = $this->C1($CA, $A8);
-        return $C4;
+    public function selectByIndex(array $params, string $indexName, array $options=null): ?array{
+        return $this->selectConstraint($params, $indexName, null, $options);
+    }
+    public function selectByWhere(string $sqlWhere, array $sqlParams, array $options=null): ?array{
+        return $this->selectConstraint($sqlParams, null, $sqlWhere, $options);
     }
 
-    public function insert(array $C4, array $A8=null): bool{
-        $D9 = $this->tfphp->getDataSource();
-        $D9->beginTransaction();
-        if(!$this->D5($D9, $C4)){
+    public function insert(array $data, array $options=null): bool{
+        $ds = $this->tfphp->getDataSource();
+        $ds->beginTransaction();
+        if(!$this->cycleInsert($ds, $data)){
             return false;
         }
-        $D9->commit();
+        $ds->commit();
         return true;
     }
 
-    public function update(array $CB, array $C4, array $A8=null): bool{
-        $D9 = $this->tfphp->getDataSource();
-        $D9->beginTransaction();
-        $CA = $this->select($CB);
-        if($CA === null){
-            return false;
-        }
-        if(!$this->getTable(0)->update($CB, $C4, [
-            "skipEmptyUpdateItems"=>true
-        ])){
-            return false;
-        }
-        if(!$this->E3($D9, $CA, $C4)){
-            return false;
-        }
-        $D9->commit();
-        return true;
+    public function update(array $data, array $query, array $options=null): bool{
+        return $this->updateConstraint($data, $query, null, $options);
     }
-    public function constraintUpdate(array $D1, array $C4, string $F5="default", array $A8=null): bool{
-        $D9 = $this->tfphp->getDataSource();
-        $D9->beginTransaction();
-        $CA = $this->constraintSelect($D1, $F5);
-        if($CA === null){
-            return false;
-        }
-        if(!$this->getTable(0)->constraintUpdate($D1, $C4)){
-            return false;
-        }
-        if(!$this->E3($D9, $CA, $C4)){
-            return false;
-        }
-        $D9->commit();
-        return true;
+    public function updateByPrimary(array $data, array $params, array $options=null): bool{
+        return $this->updateConstraint($data, $params, "default", $options);
     }
-    public function keyUpdate(array $D1, array $C4, string $F5="default", array $A8=null): bool{
-        return $this->constraintUpdate($D1, $C4, $F5);
+    public function updateByUnique(array $data, array $params, string $uniqueName, array $options=null): bool{
+        return $this->updateConstraint($data, $params, $uniqueName, $options);
+    }
+    public function updateByIndex(array $data, array $params, string $indexName, array $options=null): bool{
+        return $this->updateConstraint($data, $params, $indexName, $options);
     }
 
-    public function delete(array $CB): bool{
-        $D9 = $this->tfphp->getDataSource();
-        $D9->beginTransaction();
-        $CA = $this->select($CB);
-        if($CA === null){
-            return false;
-        }
-        if(!$this->getTable(0)->delete($CB)){
-            return false;
-        }
-        if(!$this->E9($D9, $CA)){
-            return false;
-        }
-        $D9->commit();
-        return true;
+    public function delete(array $query): bool{
+        return $this->deleteConstraint($query);
     }
-    public function constraintDelete(array $D1, string $F5="default"): bool{
-        $D9 = $this->tfphp->getDataSource();
-        $D9->beginTransaction();
-        $CA = $this->constraintSelect($D1, $F5);
-        if($CA === null){
-            return false;
-        }
-        if(!$this->getTable(0)->constraintDelete($D1)){
-            return false;
-        }
-        if(!$this->E9($D9, $CA)){
-            return false;
-        }
-        $D9->commit();
-        return true;
+    public function deleteByPrimary(array $params): bool{
+        return $this->deleteConstraint($params, "default");
     }
-    public function keyDelete(array $D1, string $F5="default"): bool{
-        return $this->constraintDelete($D1, $F5);
+    public function deleteByUnique(array $params, string $uniqueName): bool{
+        return $this->deleteConstraint($params, $uniqueName);
+    }
+    public function deleteByIndex(array $params, string $indexName): bool{
+        return $this->deleteConstraint($params, $indexName);
     }
 
-    public function getTable(int $FF): ?tfdaoSingle{
-        return $this->tables[$FF];
+    public function getTable(int $index): ?tfdaoSingle{
+        return $this->tables[$index];
     }
 
     public function getAutoIncrementField(): ?string{
@@ -319,6 +344,6 @@ class tfdaoOneToOne extends tfdao{
     }
 
     public function getLastError(): ?string{
-        return $this->D;
+        return $this->lastError;
     }
 }

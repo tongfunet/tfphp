@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\system\server;
 
@@ -13,37 +18,37 @@ use tfphp\framework\tfphp;
 
 class tfrequest{
     protected tfphp $tfphp;
-    private ?tfget $C;
-    private ?tfpost $A3;
-    private ?tffiles $A8;
-    private ?tfcookie $A9;
-    private ?tfserver $AD;
-    private ?tfsession $B3;
-    private ?tfglobals $B6;
-    public function __construct(tfphp $A){
-        $this->tfphp = $A;
-        $this->C = $this->A3 = $this->A8 = $this->A9 = $this->AD = $this->B3 = $this->B6 = null;
+    private ?tfget $get;
+    private ?tfpost $post;
+    private ?tffiles $files;
+    private ?tfcookie $cookie;
+    private ?tfserver $server;
+    private ?tfsession $session;
+    private ?tfglobals $globals;
+    public function __construct(tfphp $tfphp){
+        $this->tfphp = $tfphp;
+        $this->get = $this->post = $this->files = $this->cookie = $this->server = $this->session = $this->globals = null;
     }
     public function get(): tfget{
-        return ($this->C === null) ? new tfget() : $this->C;
+        return ($this->get === null) ? new tfget() : $this->get;
     }
     public function post(): tfpost{
-        return ($this->A3 === null) ? new tfpost() : $this->A3;
+        return ($this->post === null) ? new tfpost() : $this->post;
     }
     public function files(): tffiles{
-        return ($this->A8 === null) ? new tffiles() : $this->A8;
+        return ($this->files === null) ? new tffiles() : $this->files;
     }
     public function cookie(): tfcookie{
-        return ($this->A9 === null) ? new tfcookie() : $this->A9;
+        return ($this->cookie === null) ? new tfcookie() : $this->cookie;
     }
     public function server(): tfserver{
-        return ($this->AD === null) ? new tfserver() : $this->AD;
+        return ($this->server === null) ? new tfserver() : $this->server;
     }
     public function session(): tfsession{
-        return ($this->B3 === null) ? new tfsession() : $this->B3;
+        return ($this->session === null) ? new tfsession() : $this->session;
     }
     public function globals(): tfglobals{
-        return ($this->B6 === null) ? new tfglobals() : $this->B6;
+        return ($this->globals === null) ? new tfglobals() : $this->globals;
     }
     public function rawData(){
         return file_get_contents("php://input");
@@ -53,5 +58,14 @@ class tfrequest{
     }
     public function getResourceFunction(): string{
         return (isset($_SERVER["RESTFUL_RESOURCE_FUNCTION"])) ? $_SERVER["RESTFUL_RESOURCE_FUNCTION"] : "";
+    }
+    public function __get($name){
+        return $this->get()->get($name)
+            ?? $this->post()->get($name)
+            ?? $this->files()->get($name)
+            ?? $this->cookie()->get($name)
+            ?? $this->server()->get($name)
+            ?? $this->session()->get($name)
+            ?? $this->globals()->get($name);
     }
 }

@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\system\server;
 
@@ -6,7 +11,7 @@ use http\Exception;
 use tfphp\framework\tfphp;
 
 class tfresponse{
-    private tfphp $A;
+    private tfphp $tfphp;
     const T_DATA_HTML = 0;
     const T_DATA_JSON = 1;
     const T_DATA_PLAINTEXT = 2;
@@ -14,15 +19,15 @@ class tfresponse{
     protected int $dataType;
     protected string $dataCharset;
     protected $data;
-    public function __construct(tfphp $B8){
-        $this->A = $B8;
+    public function __construct(tfphp $tfphp){
+        $this->tfphp = $tfphp;
         $this->statusCode = 200;
         $this->dataType = tfresponse::T_DATA_HTML;
         $this->dataCharset = "UTF-8";
         $this->data = null;
     }
-    private function C0(int $C6): ?string{
-        $CA = [
+    private function getStatus(int $code): ?string{
+        $statusArr = [
             100=>"Continue",
             200=>"OK",
             301=>"Moved Permanently",
@@ -38,33 +43,33 @@ class tfresponse{
             503=>"Service Unavailable",
             504=>"Gateway Timeout",
         ];
-        if(isset($CA[$C6])){
-            return $C6. " ". $CA[$C6];
+        if(isset($statusArr[$code])){
+            return $code. " ". $statusArr[$code];
         }
         return null;
     }
-    public function setStatusCode(int $C6){
-        $this->statusCode = $C6;
+    public function setStatusCode(int $code){
+        $this->statusCode = $code;
     }
-    public function setDataType(int $AB){
-        $this->dataType = $AB;
+    public function setDataType(int $dataType){
+        $this->dataType = $dataType;
     }
-    public function setDataCharset(string $CE){
-        $this->dataCharset = $CE;
+    public function setDataCharset(string $charset){
+        $this->dataCharset = $charset;
     }
-    public function setData($B2){
-        $this->data = $B2;
+    public function setData($data){
+        $this->data = $data;
     }
-    public function header(string $D2, string $D3){
-        header($D2. ": ". $D3);
+    public function header(string $key, string $value){
+        header($key. ": ". $value);
     }
     public function response(){
-        header("HTTP/1.1 ". $this->C0($this->statusCode));
+        header("HTTP/1.1 ". $this->getStatus($this->statusCode));
         switch ($this->dataType){
             case tfresponse::T_DATA_JSON:
                 $this->header("Content-Type", "application/json; charset=". $this->dataCharset);
-                $D5 = json_encode($this->data);
-                echo $D5;
+                $jsonData = json_encode($this->data);
+                echo $jsonData;
                 break;
             case tfresponse::T_DATA_HTML:
                 $this->header("Content-Type", "text/html; charset=". $this->dataCharset);
@@ -75,95 +80,95 @@ class tfresponse{
                 echo $this->data;
                 break;
             default:
-                throw new \Exception("invalid data type ". strval($this->dataType), 666051);
+                throw new \Exception("invalid data type ". strval($this->dataType), 660801);
         }
     }
-    public function responseMIMEData($B2, ?int $D7, ?string $AC){
-        $this->setDataType(($D7 !== null && $D7 >= 0 && $D7 <= 2) ? $D7 : tfresponse::T_DATA_PLAINTEXT);
-        $this->setDataCharset(($AC !== null) ? $AC : "UTF-8");
-        $this->setData($B2);
+    public function responseMIMEData($data, ?int $dataMIMEType, ?string $dataCharset){
+        $this->setDataType(($dataMIMEType !== null && $dataMIMEType >= 0 && $dataMIMEType <= 2) ? $dataMIMEType : tfresponse::T_DATA_PLAINTEXT);
+        $this->setDataCharset(($dataCharset !== null) ? $dataCharset : "UTF-8");
+        $this->setData($data);
         $this->response();
     }
-    public function responseJSONData($B2, string $AC=null){
-        $this->responseMIMEData($B2, tfresponse::T_DATA_JSON, $AC);
+    public function responseJSONData($data, string $dataCharset=null){
+        $this->responseMIMEData($data, tfresponse::T_DATA_JSON, $dataCharset);
     }
-    public function JSONData($B2, string $AC=null){
-        $this->responseJSONData($B2, $AC);
+    public function JSONData($data, string $dataCharset=null){
+        $this->responseJSONData($data, $dataCharset);
     }
-    public function responseHTMLData($B2, string $AC=null){
-        $this->responseMIMEData($B2, tfresponse::T_DATA_HTML, $AC);
+    public function responseHTMLData($data, string $dataCharset=null){
+        $this->responseMIMEData($data, tfresponse::T_DATA_HTML, $dataCharset);
     }
-    public function HTMLData($B2, string $AC=null){
-        $this->responseHTMLData($B2, $AC);
+    public function HTMLData($data, string $dataCharset=null){
+        $this->responseHTMLData($data, $dataCharset);
     }
-    public function responsePlainTextData($B2, string $AC=null){
-        $this->responseMIMEData($B2, tfresponse::T_DATA_PLAINTEXT, $AC);
+    public function responsePlainTextData($data, string $dataCharset=null){
+        $this->responseMIMEData($data, tfresponse::T_DATA_PLAINTEXT, $dataCharset);
     }
-    public function PlainTextData($B2, string $AC=null){
-        $this->responsePlainTextData($B2, $AC);
+    public function PlainTextData($data, string $dataCharset=null){
+        $this->responsePlainTextData($data, $dataCharset);
     }
-    public function JSON(int $A7, $B2, string $AC=null){
-        $this->setStatusCode($A7);
-        $this->responseJSONData($B2, $AC);
+    public function JSON(int $statusCode, $data, string $dataCharset=null){
+        $this->setStatusCode($statusCode);
+        $this->responseJSONData($data, $dataCharset);
     }
-    public function HTML(int $A7, $B2, string $AC=null){
-        $this->setStatusCode($A7);
-        $this->responseHTMLData($B2, $AC);
+    public function HTML(int $statusCode, $data, string $dataCharset=null){
+        $this->setStatusCode($statusCode);
+        $this->responseHTMLData($data, $dataCharset);
     }
-    public function PlainText(int $A7, $B2, string $AC=null){
-        $this->setStatusCode($A7);
-        $this->responsePlainTextData($B2, $AC);
+    public function PlainText(int $statusCode, $data, string $dataCharset=null){
+        $this->setStatusCode($statusCode);
+        $this->responsePlainTextData($data, $dataCharset);
     }
-    public function responseMIMEFile(string $D8){
-        $DD = "";
-        if(($E1 = strrpos($D8, ".")) !== false) $DD = strtolower(substr($D8, $E1+1));
-        $E4 = "";
-        switch ($DD){
+    public function responseMIMEFile(string $filepath){
+        $extension = "";
+        if(($p = strrpos($filepath, ".")) !== false) $extension = strtolower(substr($filepath, $p+1));
+        $mimeType = "";
+        switch ($extension){
             case "css":
-                $E4 = "text/css";
+                $mimeType = "text/css";
                 break;
             case "js":
-                $E4 = "text/javascript";
+                $mimeType = "text/javascript";
                 break;
             case "json":
-                $E4 = "application/json";
+                $mimeType = "application/json";
                 break;
             case "xml":
-                $E4 = "text/xml";
+                $mimeType = "text/xml";
                 break;
             case "jpg":
             case "jpeg":
-                $E4 = "image/jpeg";
+                $mimeType = "image/jpeg";
                 break;
             case "png":
-                $E4 = "image/png";
+                $mimeType = "image/png";
                 break;
             case "gif":
-                $E4 = "image/gif";
+                $mimeType = "image/gif";
                 break;
             case "txt":
-                $E4 = "text/plaintext";
+                $mimeType = "text/plaintext";
                 break;
             case "ico":
-                $E4 = "image/x-icon";
+                $mimeType = "image/x-icon";
                 break;
         }
-        if(!file_exists($D8)){
+        if(!file_exists($filepath)){
             $this->setStatusCode(404);
             $this->response();
         }
-        else if(!$E4){
+        else if(!$mimeType){
             $this->setStatusCode(403);
             $this->response();
         }
         else{
             header("HTTP/1.1 200 OK");
-            header("Content-Type: ". $E4);
-            echo file_get_contents($D8);
+            header("Content-Type: ". $mimeType);
+            echo file_get_contents($filepath);
         }
     }
-    public function location(string $E7){
+    public function location(string $url){
         header("HTTP/1.1 302 Moved");
-        header("Location: ". $E7);
+        header("Location: ". $url);
     }
 }

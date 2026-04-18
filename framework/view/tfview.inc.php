@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\view;
 
@@ -6,245 +11,245 @@ use tfphp\framework\tfphp;
 
 class tfview{
     protected tfphp $tfphp;
-    private string $A4;
-    private string $A7;
-    private array $A8;
-    private array $AD;
-    private string $AF;
-    private string $B5;
-    public function __construct(tfphp $A){
-        $this->tfphp = $A;
-        $BF = TFPHP_DOCUMENT_ROOT. "/view/tfview";
-        $this->A4 = $BF. "/template";
-        $this->A7 = $BF. "/compile";
-        $this->A8 = $this->AD = [];
-        $this->AF = strval($this->tfphp->getConfig()["view"]["resource"]["css"]["extraQS"]);
-        $this->B5 = strval($this->tfphp->getConfig()["view"]["resource"]["js"]["extraQS"]);
+    private string $templateDir;
+    private string $compileDir;
+    private array $tplVariables;
+    private array $tplKeepVariables;
+    private string $jsExtraQS;
+    private string $cssExtraQS;
+    public function __construct(tfphp $tfphp){
+        $this->tfphp = $tfphp;
+        $tfviewDir = TFPHP_DOCUMENT_ROOT. "/view/tfview";
+        $this->templateDir = $tfviewDir. "/template";
+        $this->compileDir = $tfviewDir. "/compile";
+        $this->tplVariables = $this->tplKeepVariables = [];
+        $this->jsExtraQS = strval($this->tfphp->getConfig()["view"]["resource"]["css"]["extraQS"]);
+        $this->cssExtraQS = strval($this->tfphp->getConfig()["view"]["resource"]["js"]["extraQS"]);
     }
-    private function C1(string $C2, string $C4): string{
-        $C5 = [$C2, filemtime($C4), filesize($C4)];
-        $CA = base64_encode(implode(":", $C5));
-        return $CA;
+    private function compileEnvEncode(string $templateBasepath, string $templateFilepath): string{
+        $compileEnv = [$templateBasepath, filemtime($templateFilepath), filesize($templateFilepath)];
+        $compileEnvLine = base64_encode(implode(":", $compileEnv));
+        return $compileEnvLine;
     }
-    private function D0(string $CA): array{
-        $CA = base64_decode($CA);
-        $C5 = explode(":", $CA);
-        return $C5;
+    private function compileEnvDecode(string $compileEnvLine): array{
+        $compileEnvLine = base64_decode($compileEnvLine);
+        $compileEnv = explode(":", $compileEnvLine);
+        return $compileEnv;
     }
-    private function D1(string $D5){
-        if($D5[0] == '/') $D5 = substr($D5, 1);
-        $DB = $this->A7. "/". $D5;
-        $C2 = substr($D5, 0, -4);
-        $C4 = $this->A4. "/". $C2;
-        if(!file_exists($C4)){
-            throw new \Exception("template '". $C2. "' is not exists", 666071);
+    private function tryCompile(string $compileBasepath){
+        if($compileBasepath[0] == '/') $compileBasepath = substr($compileBasepath, 1);
+        $compileFilepath = $this->compileDir. "/". $compileBasepath;
+        $templateBasepath = substr($compileBasepath, 0, -4);
+        $templateFilepath = $this->templateDir. "/". $templateBasepath;
+        if(!file_exists($templateFilepath)){
+            throw new \Exception("template '". $templateBasepath. "' is not exists", 661001);
         }
-        if(!file_exists($DB)){
-            $this->F2($C2);
-            if(!file_exists($DB)){
-                throw new \Exception("fail to compile template '". $C2. "'", 666072);
+        if(!file_exists($compileFilepath)){
+            $this->doCompile($templateBasepath);
+            if(!file_exists($compileFilepath)){
+                throw new \Exception("fail to compile template '". $templateBasepath. "'", 661002);
             }
         }
-        $E1 = file_get_contents($DB);
-        if(!preg_match("/^<\?php \/\*([^\*]*)\*\//", $E1, $E4)){
-            $this->F2($C2);
-            $E1 = file_get_contents($DB);
-            if(!preg_match("/^<\?php \/\*([^\*]*)\*\//", $E1, $E4)){
-                throw new \Exception("fail to compile template '". $C2. "'", 666072);
+        $compileFilecontent = file_get_contents($compileFilepath);
+        if(!preg_match("/^<\?php \/\*([^\*]*)\*\//", $compileFilecontent, $rg)){
+            $this->doCompile($templateBasepath);
+            $compileFilecontent = file_get_contents($compileFilepath);
+            if(!preg_match("/^<\?php \/\*([^\*]*)\*\//", $compileFilecontent, $rg)){
+                throw new \Exception("fail to compile template '". $templateBasepath. "'", 661003);
             }
         }
-        $C5 = $this->D0($E4[1]);
-        if(!$C5
-            || $C5[0] != $C2
-            || $C5[1] != filemtime($C4)
-            || $C5[2] != filesize($C4)){
-            $this->F2($C2);
+        $compileEnv = $this->compileEnvDecode($rg[1]);
+        if(!$compileEnv
+            || $compileEnv[0] != $templateBasepath
+            || $compileEnv[1] != filemtime($templateFilepath)
+            || $compileEnv[2] != filesize($templateFilepath)){
+            $this->doCompile($templateBasepath);
         }
-        preg_match_all("/<\?php include\(\"([^\"]+)\"\)\; \?>/", $E1, $EA);
-        foreach ($EA[1] as $F0){
-            $this->D1($F0);
+        preg_match_all("/<\?php include\(\"([^\"]+)\"\)\; \?>/", $compileFilecontent, $rgs);
+        foreach ($rgs[1] as $myCompileBasepath){
+            $this->tryCompile($myCompileBasepath);
         }
     }
-    private function F2(string $C2){
-        $C4 = $this->A4. "/". $C2;
-        $D5 = $C2. ".php";
-        $DB = $this->A7. "/". $D5;
-        $CA = $this->C1($C2, $C4);
-        $F7 = file_get_contents($C4);
-        $F9 = $this->FC($F7);
-        if(!file_exists(dirname($DB))){
-            mkdir(dirname($DB), 0777, true);
+    private function doCompile(string $templateBasepath){
+        $templateFilepath = $this->templateDir. "/". $templateBasepath;
+        $compileBasepath = $templateBasepath. ".php";
+        $compileFilepath = $this->compileDir. "/". $compileBasepath;
+        $compileEnvLine = $this->compileEnvEncode($templateBasepath, $templateFilepath);
+        $templateContent = file_get_contents($templateFilepath);
+        $compileContent = $this->doCompileContent($templateContent);
+        if(!file_exists(dirname($compileFilepath))){
+            mkdir(dirname($compileFilepath), 0777, true);
         }
-        file_put_contents($DB, "<?php /*". $CA. "*/ ?>\r\n". $F9);
+        file_put_contents($compileFilepath, "<?php /*". $compileEnvLine. "*/ ?>\r\n". $compileContent);
     }
-    private function FC(string $A04): string{
-        $F9 = "";
-        $A07 = 0;
+    private function doCompileContent(string $content): string{
+        $compileContent = "";
+        $p = 0;
         while(true){
-            $A0B = strpos($A04, "<%", $A07);
-            if($A0B !== false){
-                $F9 .= substr($A04, $A07, $A0B-$A07);
-                $A10 = strpos($A04, "%>", $A0B+2);
-                if($A10 !== false){
-                    $A13 = trim(substr($A04, $A0B+2, $A10-$A0B-2));
+            $p1 = strpos($content, "<%", $p);
+            if($p1 !== false){
+                $compileContent .= substr($content, $p, $p1-$p);
+                $p2 = strpos($content, "%>", $p1+2);
+                if($p2 !== false){
+                    $code = trim(substr($content, $p1+2, $p2-$p1-2));
                     // include file='xxx'
-                    if(preg_match("/include[\s\t]+file\=(?:\'([^\']+)\'|\"([^\"]+)\")/i", $A13, $E4)){
-                        $A17 = ($E4[1]) ? $E4[1] : $E4[2];
-                        $A1A = $A17;
-                        $F0 = $A17. ".php";
-                        $this->F2($A1A);
-                        $A13 = "include(\"". $F0. "\");";
+                    if(preg_match("/include[\s\t]+file\=(?:\'([^\']+)\'|\"([^\"]+)\")/i", $code, $rg)){
+                        $filepath = ($rg[1]) ? $rg[1] : $rg[2];
+                        $myTemplateBasepath = $filepath;
+                        $myCompileBasepath = $filepath. ".php";
+                        $this->doCompile($myTemplateBasepath);
+                        $code = "include(\"". $myCompileBasepath. "\");";
                     }
                     // resource css='xxx'
                     // resource js='xxx'
-                    else if(preg_match("/resource[\s\t]+(css|js)\=(?:\'([^\']+)\'|\"([^\"]+)\")/i", $A13, $E4)){
-                        $A17 = ($E4[2]) ? $E4[2] : $E4[3];
-                        $A13 = "echo \$this->htmlReference". strtoupper($E4[1]). "(\"". $A17. "\");";
+                    else if(preg_match("/resource[\s\t]+(css|js)\=(?:\'([^\']+)\'|\"([^\"]+)\")/i", $code, $rg)){
+                        $filepath = ($rg[2]) ? $rg[2] : $rg[3];
+                        $code = "echo \$this->htmlReference". strtoupper($rg[1]). "(\"". $filepath. "\");";
                     }
                     // for $item in $items
-                    else if(preg_match("/for[\s\t]+\\$([a-zA-Z0-9_]+)[\s\t]+in[\s\t]+\\$([a-zA-Z0-9_\.]+)/", $A13, $E4)){
-                        $A1B = $E4[2];
-                        $A1F = $E4[1];
-                        $this->AD[] = $A1F;
-                        $A13 = "foreach(". $this->A39("\$". $A1B). " as \$". $A1F. "){";
+                    else if(preg_match("/for[\s\t]+\\$([a-zA-Z0-9_]+)[\s\t]+in[\s\t]+\\$([a-zA-Z0-9_\.]+)/", $code, $rg)){
+                        $itemsName = $rg[2];
+                        $itemKeyName = $rg[1];
+                        $this->tplKeepVariables[] = $itemKeyName;
+                        $code = "foreach(". $this->doCompileExpression("\$". $itemsName). " as \$". $itemKeyName. "){";
                     }
                     // for $item in range($from, $to)
-                    else if(preg_match("/for[\s\t]+\\$([a-zA-Z0-9_]+)[\s\t]+in[\s\t]+range\([\s\t]*(\\$[a-zA-Z0-9_\.]+|[0-9\-\.]+)[\s\t]*,[\s\t]*(\\$[a-zA-Z0-9_\.]+|[0-9\-\.]+)[\s\t]*\)/", $A13, $E4)){
-                        $A23 = $E4[2];
-                        $A29 = $E4[3];
-                        $A1F = $E4[1];
-                        $this->AD[] = $A1F;
-                        $A13 = "for(". $this->A39("\$". $A1F). "=". $this->A39($A23). ";". $this->A39("\$". $A1F). "<=". $this->A39($A29). ";". $this->A39("\$". $A1F). "+=1){";
+                    else if(preg_match("/for[\s\t]+\\$([a-zA-Z0-9_]+)[\s\t]+in[\s\t]+range\([\s\t]*(\\$[a-zA-Z0-9_\.]+|[0-9\-\.]+)[\s\t]*,[\s\t]*(\\$[a-zA-Z0-9_\.]+|[0-9\-\.]+)[\s\t]*\)/", $code, $rg)){
+                        $itemRangeFromName = $rg[2];
+                        $itemRangeToName = $rg[3];
+                        $itemKeyName = $rg[1];
+                        $this->tplKeepVariables[] = $itemKeyName;
+                        $code = "for(". $this->doCompileExpression("\$". $itemKeyName). "=". $this->doCompileExpression($itemRangeFromName). ";". $this->doCompileExpression("\$". $itemKeyName). "<=". $this->doCompileExpression($itemRangeToName). ";". $this->doCompileExpression("\$". $itemKeyName). "+=1){";
                     }
                     // if xxx
                     // elseif xxx
                     // else if xxx
-                    else if(preg_match("/(if|elseif|else[\s\t]+if)[\s\t]+(.+)/s", $A13, $E4)){
-                        $A2E = $E4[1];
-                        if(preg_match("/^(elseif|else[\s\t]+if)$/", $A2E)){
-                            $A2E = "}". $A2E;
+                    else if(preg_match("/(if|elseif|else[\s\t]+if)[\s\t]+(.+)/s", $code, $rg)){
+                        $keyword = $rg[1];
+                        if(preg_match("/^(elseif|else[\s\t]+if)$/", $keyword)){
+                            $keyword = "}". $keyword;
                         }
-                        $A34 = $E4[2];
-                        $A34 = $this->A39($A34);
-                        $A13 = $A2E. "(". $A34. "){";
+                        $expression = $rg[2];
+                        $expression = $this->doCompileExpression($expression);
+                        $code = $keyword. "(". $expression. "){";
                     }
                     // else
-                    else if(preg_match("/(else)/", $A13)){
-                        $A13 = "}else{";
+                    else if(preg_match("/(else)/", $code)){
+                        $code = "}else{";
                     }
-                    else if(preg_match("/\/(for|if)/", $A13)){
-                        $A13 = "}";
+                    else if(preg_match("/\/(for|if)/", $code)){
+                        $code = "}";
                     }
                     // $tfphp, $get, $post, $files, $cookie, $server, $session
-                    else if(preg_match("/\\$(tfphp|get|post|files|cookie|server|session)(.+)/", $A13, $E4)){
-                        $A34 = $E4[2];
-                        $A34 = $this->A39($A34);
-                        $A13 = "echo \$this->getTFPHP()";
-                        switch ($E4[1]){
+                    else if(preg_match("/\\$(tfphp|get|post|files|cookie|server|session)(.+)/", $code, $rg)){
+                        $expression = $rg[2];
+                        $expression = $this->doCompileExpression($expression);
+                        $code = "echo \$this->getTFPHP()";
+                        switch ($rg[1]){
                             case "get":
-                                $A13 .= "->getRequest()->get()";
+                                $code .= "->getRequest()->get()";
                                 break;
                             case "post":
-                                $A13 .= "->getRequest()->post()";
+                                $code .= "->getRequest()->post()";
                                 break;
                             case "files":
-                                $A13 .= "->getRequest()->files()";
+                                $code .= "->getRequest()->files()";
                                 break;
                             case "cookie":
-                                $A13 .= "->getRequest()->cookie()";
+                                $code .= "->getRequest()->cookie()";
                                 break;
                             case "server":
-                                $A13 .= "->getRequest()->server()";
+                                $code .= "->getRequest()->server()";
                                 break;
                             case "session":
-                                $A13 .= "->getRequest()->session()";
+                                $code .= "->getRequest()->session()";
                                 break;
                         }
-                        $A13 .= $A34;
+                        $code .= $expression;
                     }
                     // serverURL('xxx')
                     // URL('xxx')
-                    else if(preg_match("/(serverURL|URL)(.+)/", $A13, $E4)){
-                        $A34 = $E4[2];
-                        $A34 = $this->A39($A34);
-                        $A13 = "echo \$this->". $E4[1]. $A34;
+                    else if(preg_match("/(serverURL|URL)(.+)/", $code, $rg)){
+                        $expression = $rg[2];
+                        $expression = $this->doCompileExpression($expression);
+                        $code = "echo \$this->". $rg[1]. $expression;
                     }
                     else{
-                        $A13 = $this->A39($A13);
-                        $A13 = preg_replace("/^[\s\t\r\n]*\\$/", "echo \$", $A13);
+                        $code = $this->doCompileExpression($code);
+                        $code = preg_replace("/^[\s\t\r\n]*\\$/", "echo \$", $code);
                     }
-                    $F9 .= "<?php ". $A13. " ?>";
-                    $A07 = $A10+2;
+                    $compileContent .= "<?php ". $code. " ?>";
+                    $p = $p2+2;
                 }
                 else{
                     break;
                 }
             }
             else{
-                $F9 .= substr($A04, $A07);
+                $compileContent .= substr($content, $p);
                 break;
             }
         }
-        return $F9;
+        return $compileContent;
     }
-    private function A39(string $A34): string{
-        $A34 = preg_replace_callback("/\\$([a-zA-Z0-9_\.]+)/", function(array $A3E){
-            $A42 = $A3E[1];
-            $A44 = explode(".", $A42);
-            $A4A = count($A44);
-            $A4C = (!in_array($A44[0], $this->AD)) ? "\$this->getVar(\"". $A44[0]. "\")" : "\$". $A44[0]. "";
-            if($A4A > 1){
-                for($A4F=1;$A4F<$A4A;$A4F++){
-                    $A4C .= ($A44[$A4F]) ? "[\"". $A44[$A4F]. "\"]" : ".";
+    private function doCompileExpression(string $expression): string{
+        $expression = preg_replace_callback("/\\$([a-zA-Z0-9_\.]+)/", function(array $mats){
+            $varName = $mats[1];
+            $varNameItems = explode(".", $varName);
+            $varNameItemsCount = count($varNameItems);
+            $compileVarName = (!in_array($varNameItems[0], $this->tplKeepVariables)) ? "\$this->getVar(\"". $varNameItems[0]. "\")" : "\$". $varNameItems[0]. "";
+            if($varNameItemsCount > 1){
+                for($i=1;$i<$varNameItemsCount;$i++){
+                    $compileVarName .= ($varNameItems[$i]) ? "[\"". $varNameItems[$i]. "\"]" : ".";
                 }
             }
-            return $A4C;
-        }, $A34);
-        return $A34;
+            return $compileVarName;
+        }, $expression);
+        return $expression;
     }
-    private function A55(string $D5): bool{
-        $DB = $this->A7. $D5;
+    private function doLoad(string $compileBasepath): bool{
+        $compileFilepath = $this->compileDir. $compileBasepath;
         header("Content-Type: text/html; charset=UTF-8");
-        include_once ($DB);
+        include_once ($compileFilepath);
         return true;
     }
-    public function setTemplateDir(string $A57){
-        return $this->A4 = $A57;
+    public function setTemplateDir(string $templateDir){
+        return $this->templateDir = $templateDir;
     }
-    public function setCompileDir(string $A5D){
-        return $this->A7 = $A5D;
+    public function setCompileDir(string $compileDir){
+        return $this->compileDir = $compileDir;
     }
-    public function setVar(string $A42, $A60){
-        $this->A8[$A42] = $A60;
+    public function setVar(string $varName, $varValue){
+        $this->tplVariables[$varName] = $varValue;
     }
-    public function getVar(string $A42){
-        return (isset($this->A8[$A42])) ? $this->A8[$A42] : null;
+    public function getVar(string $varName){
+        return (isset($this->tplVariables[$varName])) ? $this->tplVariables[$varName] : null;
     }
-    public function htmlReferenceJS(string $A17): string{
-        if($this->AF) $A17 .= ((strpos($A17, "?") === false) ? "?" : "&"). $this->AF;
-        if(!preg_match("/^([^\:]+)\:\/\//", $A17)) $A17 = $this->tfphp->URL($A17);
-        return sprintf("<script type=\"text/javascript\" src=\"%s\"></script>", $A17);
+    public function htmlReferenceJS(string $filepath): string{
+        if($this->jsExtraQS) $filepath .= ((strpos($filepath, "?") === false) ? "?" : "&"). $this->jsExtraQS;
+        if(!preg_match("/^([^\:]+)\:\/\//", $filepath)) $filepath = $this->tfphp->URL($filepath);
+        return sprintf("<script type=\"text/javascript\" src=\"%s\"></script>", $filepath);
     }
-    public function htmlReferenceCSS(string $A17): string{
-        if($this->B5) $A17 .= ((strpos($A17, "?") === false) ? "?" : "&"). $this->B5;
-        if(!preg_match("/^([^\:]+)\:\/\//", $A17)) $A17 = $this->tfphp->URL($A17);
-        return sprintf("<link rel=\"stylesheet\" type=\"text/css\" href=\"%s\" />", $A17);
+    public function htmlReferenceCSS(string $filepath): string{
+        if($this->cssExtraQS) $filepath .= ((strpos($filepath, "?") === false) ? "?" : "&"). $this->cssExtraQS;
+        if(!preg_match("/^([^\:]+)\:\/\//", $filepath)) $filepath = $this->tfphp->URL($filepath);
+        return sprintf("<link rel=\"stylesheet\" type=\"text/css\" href=\"%s\" />", $filepath);
     }
     public function getTFPHP(): tfphp{
         return $this->tfphp;
     }
-    public function serverURL(string $A61): string{
-        return $this->tfphp->serverURL($A61);
+    public function serverURL(string $url): string{
+        return $this->tfphp->serverURL($url);
     }
-    public function URL(string $A61): string{
-        return $this->serverURL($A61);
+    public function URL(string $url): string{
+        return $this->serverURL($url);
     }
     public function load(): bool{
-        $A67 = str_replace("", "", substr($_SERVER["SCRIPT_FILENAME"], 0, -8));
-        $C2 = $A67. ".html";
-        $D5 = $C2. ".php";
-        $this->D1($D5);
-        chdir($this->A7);
-        return $this->A55($D5);
+        $templateFilename = str_replace("", "", substr($_SERVER["SCRIPT_FILENAME"], 0, -8));
+        $templateBasepath = $templateFilename. ".html";
+        $compileBasepath = $templateBasepath. ".php";
+        $this->tryCompile($compileBasepath);
+        chdir($this->compileDir);
+        return $this->doLoad($compileBasepath);
     }
 }

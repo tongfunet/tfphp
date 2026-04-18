@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\text\encoding;
 
@@ -6,42 +11,42 @@ use tfphp\framework\tfphp;
 
 class tfaes{
     protected tfphp $tfphp;
-    private string $C;
-    public function __construct(tfphp $A){
-        $this->tfphp = $A;
-        $this->C = "AES-256-CBC";
+    private string $method;
+    public function __construct(tfphp $tfphp){
+        $this->tfphp = $tfphp;
+        $this->method = "AES-256-CBC";
     }
-    public function setMethod(string $A1){
-        if(!in_array(strtolower($A1), openssl_get_cipher_methods())){
-            throw new \Exception("invalid method '". $A1. "' of aes", 666111);
+    public function setMethod(string $method){
+        if(!in_array(strtolower($method), openssl_get_cipher_methods())){
+            throw new \Exception("invalid method '". $method. "' of aes", 660901);
         }
-        $this->C = $A1;
+        $this->method = $method;
     }
-    public function testIVLength(string $A1): int{
-        return openssl_cipher_iv_length(strtolower($A1));
+    public function testIVLength(string $method): int{
+        return openssl_cipher_iv_length(strtolower($method));
     }
-    public function PKCS7Padding(string $A4, int $A6): string{
-        $AB = $A6 - (strlen($A4) % $A6);
-        return $A4. str_repeat(chr($AB), $AB);
+    public function PKCS7Padding(string $data, int $blockSize): string{
+        $padSize = $blockSize - (strlen($data) % $blockSize);
+        return $data. str_repeat(chr($padSize), $padSize);
     }
-    public function encrypt(string $A4, string $AE, string $B2): string{
-        $AE = str_pad($AE, 32, '0', STR_PAD_RIGHT);
-        $B2 = str_pad($B2, openssl_cipher_iv_length($this->C), '0', STR_PAD_RIGHT);
-        $B6 = openssl_encrypt($A4, $this->C, $AE, OPENSSL_RAW_DATA, $B2);
-        if(!$B6){
-            throw new \Exception(openssl_error_string(), 666112);
+    public function encrypt(string $data, string $key, string $iv): string{
+        $key = str_pad($key, 32, '0', STR_PAD_RIGHT);
+        $iv = str_pad($iv, openssl_cipher_iv_length($this->method), '0', STR_PAD_RIGHT);
+        $encrypted = openssl_encrypt($data, $this->method, $key, OPENSSL_RAW_DATA, $iv);
+        if(!$encrypted){
+            throw new \Exception(openssl_error_string(), 660902);
         }
-        $BB = base64_encode($B6);
-        return $BB;
+        $encoded = base64_encode($encrypted);
+        return $encoded;
     }
-    public function decrypt(string $BC, string $AE, string $B2): string{
-        $AE = str_pad($AE, 32, '0', STR_PAD_RIGHT);
-        $B2 = str_pad($B2, openssl_cipher_iv_length($this->C), '0', STR_PAD_RIGHT);
-        $BD = base64_decode($BC);
-        $BE = openssl_decrypt($BD, $this->C, $AE, OPENSSL_RAW_DATA, $B2);
-        if(!$BE){
-            throw new \Exception(openssl_error_string(), 666113);
+    public function decrypt(string $encodedData, string $key, string $iv): string{
+        $key = str_pad($key, 32, '0', STR_PAD_RIGHT);
+        $iv = str_pad($iv, openssl_cipher_iv_length($this->method), '0', STR_PAD_RIGHT);
+        $decoded = base64_decode($encodedData);
+        $decrypted = openssl_decrypt($decoded, $this->method, $key, OPENSSL_RAW_DATA, $iv);
+        if(!$decrypted){
+            throw new \Exception(openssl_error_string(), 660903);
         }
-        return $BE;
+        return $decrypted;
     }
 }

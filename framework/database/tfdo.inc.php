@@ -1,4 +1,9 @@
-<?php 
+<?php
+
+/*
+ * SPDX-FileCopyrightText: 2026 Tongfu from Tongfu.net
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 namespace tfphp\framework\database;
 
@@ -10,269 +15,279 @@ use tfphp\framework\tfphp;
  * @datetime 2025/7/17
  */
 class tfdo{
-    private tfphp $A;
-    private array $E;
-    private bool $A0;
-    private int $A5;
-    private \PDO $AB;
-    public function __construct(tfphp $B0, array $B2){
-        $this->A = $B0;
-        $this->E = $B2;
-        $this->A0 = false;
-        $this->A5 = 0;
+    private tfphp $tfphp;
+    private array $params;
+    private bool $ready;
+    private int $transactionLevel;
+    private \PDO $pdo;
+    public function __construct(tfphp $tfphp, array $params){
+        $this->tfphp = $tfphp;
+        $this->params = $params;
+        $this->ready = false;
+        $this->transactionLevel = 0;
     }
-    private function B7(){
-        if(!$this->A0){
-            $this->A0 = true;
-            if(empty($this->E["driver"])) $this->E["driver"] = "mysql";
-            switch ($this->E["driver"]){
+    private function readyTest(){
+        if(!$this->ready){
+            $this->ready = true;
+            if(empty($this->params["driver"])) $this->params["driver"] = "mysql";
+            switch ($this->params["driver"]){
                 case "mysql":
-                    if(empty($this->E["host"])) $this->E["host"] = "localhost";
-                    if(empty($this->E["port"])) $this->E["port"] = 3306;
-                    if(empty($this->E["database"])) $this->E["database"] = "";
-                    if(empty($this->E["username"])) $this->E["username"] = "root";
-                    if(empty($this->E["password"])) $this->E["password"] = "";
-                    if(empty($this->E["charset"])) $this->E["charset"] = "utf8mb4";
-                    $BA = "mysql:host=". $this->E["host"]. ";port=". $this->E["port"]. ";dbname=". $this->E["database"]. ";charset=". $this->E["charset"];
-                    $this->AB = new \PDO($BA, $this->E["username"], $this->E["password"]);
-                    $this->AB->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
-                    $this->AB->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
-                    $this->AB->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+                    if(empty($this->params["host"])) $this->params["host"] = "localhost";
+                    if(empty($this->params["port"])) $this->params["port"] = 3306;
+                    if(empty($this->params["database"])) $this->params["database"] = "";
+                    if(empty($this->params["username"])) $this->params["username"] = "root";
+                    if(empty($this->params["password"])) $this->params["password"] = "";
+                    if(empty($this->params["charset"])) $this->params["charset"] = "utf8mb4";
+                    $dsn = "mysql:host=". $this->params["host"]. ";port=". $this->params["port"]. ";dbname=". $this->params["database"]. ";charset=". $this->params["charset"];
+                    $this->pdo = new \PDO($dsn, $this->params["username"], $this->params["password"]);
+                    $this->pdo->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+                    $this->pdo->setAttribute(\PDO::ATTR_STRINGIFY_FETCHES, false);
+                    $this->pdo->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
                     break;
                 default:
-                    throw new \Exception("invalid type ". $this->E["driver"]. " for TFDO");
+                    throw new \Exception("invalid type ". $this->params["driver"]. " for TFDO", 660101);
             }
         }
     }
-    private function BB(string $C0, array $B2): \PDOStatement{
-        $this->B7();
-        $C2 = $this->AB->prepare($C0);
-        foreach ($B2 as $C5){
-            $C2->bindParam($C5["name"], $C5["value"], $C5["type"]);
+    private function query(string $sql, array $params): \PDOStatement{
+        $this->readyTest();
+        // from xxx
+        // join xxx
+        // insert into xxx
+        // update xxx
+        // create/drop/alter/truncate table xxx
+        $sql = preg_replace_callback("/((?:from|join|into|update|table|desc)[\s\t\r\n]+)(\^)?([a-zA-Z0-9\_]+)(\\$)?/", function(array $mats){
+            $needPrefix = ($mats[2]);
+            $needSuffix = (count($mats) == 5);
+            return $mats[1]. (($needPrefix)?strval($this->params["table_prefix"]):""). $mats[3]. (($needSuffix)?strval($this->params["table_suffix"]):"");
+        }, $sql);
+        $stmt = $this->pdo->prepare($sql);
+        foreach ($params as $param){
+            $stmt->bindParam($param["name"], $param["value"], $param["type"]);
         }
-        $C2->execute();
-        return $C2;
+        $stmt->execute();
+        return $stmt;
     }
-    private function C9(string $C0, array $B2): \PDOStatement{
-        $this->B7();
-        $CF = count($B2);
-        $D5 = [];
-        $D9 = 0;
-        while(preg_match("/\?/", $C0, $DE, PREG_OFFSET_CAPTURE)){
-            if(($D9+1) > $CF){
-                throw new \Exception("too few arguments, ". strval($D9+1). " are needed and ". strval($CF). " are given", 666031);
+    private function query2(string $sql, array $params): \PDOStatement{
+        $this->readyTest();
+        $paramsCount = count($params);
+        $newParams = [];
+        $i = 0;
+        while(preg_match("/\?/", $sql, $rg, PREG_OFFSET_CAPTURE)){
+            if(($i+1) > $paramsCount){
+                throw new \Exception("too few arguments, ". strval($i+1). " are needed and ". strval($paramsCount). " are given", 660102);
             }
-            $DF = ":f". strval($D9);
-            $C0 = substr($C0, 0, $DE[0][1]). $DF. substr($C0, $DE[0][1]+strlen($DE[0][0]));
-            $D5[] = [
-                "name"=>$DF,
+            $name = ":f". strval($i);
+            $sql = substr($sql, 0, $rg[0][1]). $name. substr($sql, $rg[0][1]+strlen($rg[0][0]));
+            $newParams[] = [
+                "name"=>$name,
                 "type"=>\PDO::PARAM_STR,
-                "value"=>$B2[$D9]
+                "value"=>$params[$i]
             ];
-            $D9 ++;
+            $i ++;
         }
-        if($D9 < $CF){
-            throw new \Exception("too many arguments, ". strval($D9). " are needed and ". strval($CF). " are given", 666032);
+        if($i < $paramsCount){
+            throw new \Exception("too many arguments, ". strval($i). " are needed and ". strval($paramsCount). " are given", 660103);
         }
-        return $this->BB($C0, $D5);
+        return $this->query($sql, $newParams);
     }
-    private function E5(string $C0, array $B2): \PDOStatement{
-        $this->B7();
-        $CF = count($B2);
-        $D5 = [];
-        $D9 = 0;
-        while(preg_match("/\@(int|str)/", $C0, $DE, PREG_OFFSET_CAPTURE)){
-            if(($D9+1) > $CF){
-                throw new \Exception("too few arguments, ". strval($D9+1). " are needed and ". strval($CF). " are given", 666031);
+    private function query3(string $sql, array $params): \PDOStatement{
+        $this->readyTest();
+        $paramsCount = count($params);
+        $newParams = [];
+        $i = 0;
+        while(preg_match("/\@(int|str)/", $sql, $rg, PREG_OFFSET_CAPTURE)){
+            if(($i+1) > $paramsCount){
+                throw new \Exception("too few arguments, ". strval($i+1). " are needed and ". strval($paramsCount). " are given", 660104);
             }
-            $DF = ":f". strval($D9);
-            if($DE[1][0] == "int") $E6 = \PDO::PARAM_INT;
-            else $E6 = \PDO::PARAM_STR;
-            $C0 = substr($C0, 0, $DE[0][1]). $DF. substr($C0, $DE[0][1]+strlen($DE[0][0]));
-            $D5[] = [
-                "name"=>$DF,
-                "type"=>$E6,
-                "value"=>$B2[$D9]
+            $name = ":f". strval($i);
+            if($rg[1][0] == "int") $type = \PDO::PARAM_INT;
+            else $type = \PDO::PARAM_STR;
+            $sql = substr($sql, 0, $rg[0][1]). $name. substr($sql, $rg[0][1]+strlen($rg[0][0]));
+            $newParams[] = [
+                "name"=>$name,
+                "type"=>$type,
+                "value"=>$params[$i]
             ];
-            $D9 ++;
+            $i ++;
         }
-        if($D9 < $CF){
-            throw new \Exception("too many arguments, ". strval($D9). " are needed and ". strval($CF). " are given", 666032);
+        if($i < $paramsCount){
+            throw new \Exception("too many arguments, ". strval($i). " are needed and ". strval($paramsCount). " are given", 660105);
         }
-        return $this->BB($C0, $D5);
+        return $this->query($sql, $newParams);
     }
-    private function EA(string $C0, array $B2): bool{
-        $this->BB($C0, $B2);
+    private function doExecute(string $sql, array $params): bool{
+        $this->query($sql, $params);
         return true;
     }
-    private function EF(\PDOStatement $C2): ?array{
-        $F0 = $C2->fetch(\PDO::FETCH_ASSOC);
-        if($F0 === false){
+    private function doFetchOne(\PDOStatement $stmt): ?array{
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if($row === false){
             return null;
         }
-        return $F0;
+        return $row;
     }
-    private function F3(\PDOStatement $C2): array{
-        $F8 = $C2->fetchAll(\PDO::FETCH_ASSOC);
-        if($F8 === false || count($F8) == 0){
+    private function doFetchMany(\PDOStatement $stmt): array{
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        if($rows === false || count($rows) == 0){
             return [];
         }
-        return $F8;
+        return $rows;
     }
-    private function FD(\PDOStatement $C2): array{
-        $F8 = $C2->fetchAll(\PDO::FETCH_ASSOC);
-        if($F8 === false || count($F8) == 0){
+    private function doFetchAll(\PDOStatement $stmt): array{
+        $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        if($rows === false || count($rows) == 0){
             return [];
         }
-        return $F8;
+        return $rows;
     }
     public function beginTransaction(): bool{
-        $this->B7();
-        if($this->A5 == 0){
-            $FE = $this->AB->beginTransaction();
+        $this->readyTest();
+        if($this->transactionLevel == 0){
+            $ret = $this->pdo->beginTransaction();
         }
         else{
-            $FE = $this->AB->exec("SAVEPOINT LEVEL". $this->A5);
+            $ret = $this->pdo->exec("SAVEPOINT LEVEL". $this->transactionLevel);
         }
-        $this->A5 ++;
-        return $FE;
+        $this->transactionLevel ++;
+        return $ret;
     }
     public function commit(): bool{
-        $this->B7();
-        if($this->A5 > 0){
-            $this->A5 --;
-            if($this->A5 == 0){
-                return $this->AB->commit();
+        $this->readyTest();
+        if($this->transactionLevel > 0){
+            $this->transactionLevel --;
+            if($this->transactionLevel == 0){
+                return $this->pdo->commit();
             }
         }
         return false;
     }
     public function rollback(): bool{
-        $this->B7();
-        if($this->A5 > 0){
-            $this->A5 --;
-            if($this->A5 == 0){
-                return $this->AB->rollBack();
+        $this->readyTest();
+        if($this->transactionLevel > 0){
+            $this->transactionLevel --;
+            if($this->transactionLevel == 0){
+                return $this->pdo->rollBack();
             }
             else{
-                return $this->AB->exec("ROLLBACK TO SAVEPOINT LEVEL". $this->A5);
+                return $this->pdo->exec("ROLLBACK TO SAVEPOINT LEVEL". $this->transactionLevel);
             }
         }
         return false;
     }
-    public function execute(string $C0, array $B2): bool{
-        return $this->EA($C0, $B2);
+    public function execute(string $sql, array $params): bool{
+        return $this->doExecute($sql, $params);
     }
-    public function execute2(string $C0, array $B2): bool{
-        return $this->EA($C0, $B2);
+    public function execute2(string $sql, array $params): bool{
+        return $this->doExecute($sql, $params);
     }
-    public function execute3(string $C0, array $B2): bool{
-        return $this->EA($C0, $B2);
+    public function execute3(string $sql, array $params): bool{
+        return $this->doExecute($sql, $params);
     }
-    public function fetchOne(string $C0, array $B2): ?array{
-        $C2 = $this->BB($C0, $B2);
-        return $this->EF($C2);
+    public function fetchOne(string $sql, array $params): ?array{
+        $stmt = $this->query($sql, $params);
+        return $this->doFetchOne($stmt);
     }
-    public function fetchOne2(string $C0, array $B2): ?array{
-        $C2 = $this->C9($C0, $B2);
-        return $this->EF($C2);
+    public function fetchOne2(string $sql, array $params): ?array{
+        $stmt = $this->query2($sql, $params);
+        return $this->doFetchOne($stmt);
     }
-    public function fetchOne3(string $C0, array $B2): ?array{
-        $C2 = $this->E5($C0, $B2);
-        return $this->EF($C2);
+    public function fetchOne3(string $sql, array $params): ?array{
+        $stmt = $this->query3($sql, $params);
+        return $this->doFetchOne($stmt);
     }
-    public function fetchMany(string $C0, array $B2, int $A01, int $A02): array{
-        switch ($this->E["driver"]){
+    public function fetchMany(string $sql, array $params, int $seekBegin, int $fetchNums): array{
+        switch ($this->params["driver"]){
             case "mysql":
-                $C0 .= " LIMIT ". strval($A01). ",". strval($A02);
+                $sql .= " LIMIT ". strval($seekBegin). ",". strval($fetchNums);
                 break;
         }
-        $C2 = $this->BB($C0, $B2);
-        return $this->F3($C2);
+        $stmt = $this->query($sql, $params);
+        return $this->doFetchMany($stmt);
     }
-    public function fetchMany2(string $C0, array $B2, int $A01, int $A02): array{
-        switch ($this->E["driver"]){
+    public function fetchMany2(string $sql, array $params, int $seekBegin, int $fetchNums): array{
+        switch ($this->params["driver"]){
             case "mysql":
-                $C0 .= " LIMIT ". strval($A01). ",". strval($A02);
+                $sql .= " LIMIT ". strval($seekBegin). ",". strval($fetchNums);
                 break;
         }
-        $C2 = $this->C9($C0, $B2);
-        return $this->F3($C2);
+        $stmt = $this->query2($sql, $params);
+        return $this->doFetchMany($stmt);
     }
-    public function fetchMany3(string $C0, array $B2, int $A01, int $A02): array{
-        switch ($this->E["driver"]){
+    public function fetchMany3(string $sql, array $params, int $seekBegin, int $fetchNums): array{
+        switch ($this->params["driver"]){
             case "mysql":
-                $C0 .= " LIMIT ". strval($A01). ",". strval($A02);
+                $sql .= " LIMIT ". strval($seekBegin). ",". strval($fetchNums);
                 break;
         }
-        $C2 = $this->E5($C0, $B2);
-        return $this->F3($C2);
+        $stmt = $this->query3($sql, $params);
+        return $this->doFetchMany($stmt);
     }
-    public function fetchAll(string $C0, array $B2): array{
-        $C2 = $this->BB($C0, $B2);
-        return $this->FD($C2);
+    public function fetchAll(string $sql, array $params): array{
+        $stmt = $this->query($sql, $params);
+        return $this->doFetchAll($stmt);
     }
-    public function fetchAll2(string $C0, array $B2): array{
-        $C2 = $this->C9($C0, $B2);
-        return $this->FD($C2);
+    public function fetchAll2(string $sql, array $params): array{
+        $stmt = $this->query2($sql, $params);
+        return $this->doFetchAll($stmt);
     }
-    public function fetchAll3(string $C0, array $B2): array{
-        $C2 = $this->E5($C0, $B2);
-        return $this->FD($C2);
+    public function fetchAll3(string $sql, array $params): array{
+        $stmt = $this->query3($sql, $params);
+        return $this->doFetchAll($stmt);
     }
     public function getLastInsertAutoIncrementValue(): ?int{
-        switch ($this->E["driver"]){
+        switch ($this->params["driver"]){
             case "mysql":
-                $A04 = $this->fetchOne3("select last_insert_id() as id", []);
-                if($A04){
-                    return $A04["id"];
+                $lastInsertIdRow = $this->fetchOne3("select last_insert_id() as id", []);
+                if($lastInsertIdRow){
+                    return $lastInsertIdRow["id"];
                 }
                 return null;
         }
         return null;
     }
-    public function makePagination(int $A07, int $A0D, int $A0E, array $A10=null): array{
-        if($A10 === null) $A10 = [];
-        $A14 = ceil($A07/$A0D);
-        if($A0E > $A14) $A0E = $A14;
-        if($A0E < 1) $A0E = 1;
-        $A19 = [
+    public function makePagination(int $total, int $percentpage, int $currentpage, array $options=null): array{
+        if($options === null) $options = [];
+        $totalpage = ceil($total/$percentpage);
+        if($currentpage > $totalpage) $currentpage = $totalpage;
+        if($currentpage < 1) $currentpage = 1;
+        $links = [
             "first"=>1,
-            "previous"=>(($A14 > 0 && $A0E > 1) ? $A0E-1 : 1),
-            "next"=>(($A14 > 0 && $A0E < $A14) ? $A0E+1 : $A14),
-            "last"=>$A14
+            "previous"=>(($totalpage > 0 && $currentpage > 1) ? $currentpage-1 : 1),
+            "next"=>(($totalpage > 0 && $currentpage < $totalpage) ? $currentpage+1 : $totalpage),
+            "last"=>$totalpage
         ];
-        $A01 = ($A0E-1)*$A0D;
-        $A02 = $A0D;
-        if(($A01+$A02) > $A07) $A02 = $A07-$A01;
-        $A1D = ($A0E-1)*$A0D+1;
-        $A22 = $A0E*$A0D;
-        if($A22 > $A07) $A22 = $A07;
-        $A25 = [
-            "total"=>$A07,
-            "percentpage"=>$A0D,
-            "totalpage"=>$A14,
-            "currentpage"=>$A0E,
-            "seekbegin"=>$A01,
-            "fetchnums"=>$A02,
-            "from"=>$A1D,
-            "to"=>$A22,
-            "links"=>$A19,
+        $seekBegin = ($currentpage-1)*$percentpage;
+        $fetchNums = $percentpage;
+        if(($seekBegin+$fetchNums) > $total) $fetchNums = $total-$seekBegin;
+        $from = ($currentpage-1)*$percentpage+1;
+        $to = $currentpage*$percentpage;
+        if($to > $total) $to = $total;
+        $pagination = [
+            "total"=>$total,
+            "percentpage"=>$percentpage,
+            "totalpage"=>$totalpage,
+            "currentpage"=>$currentpage,
+            "seekbegin"=>$seekBegin,
+            "fetchnums"=>$fetchNums,
+            "from"=>$from,
+            "to"=>$to,
+            "links"=>$links,
         ];
-        if(isset($A10["teamlinksLength"]) && $A10["teamlinksLength"] > 0){
-            $A28 = $A0E-$A10["teamlinksLength"]/2;
-            if($A28 < 1) $A28 = 1;
-            $A2A = $A0E+$A10["teamlinksLength"]/2;
-            if($A2A > $A14) $A2A = $A14;
-            $A25["teamlinks"] = [];
-            for($D9=$A28;$D9<=$A2A;$D9++){
-                $A25["teamlinks"][] = $D9;
+        if(isset($options["teamlinksLength"]) && $options["teamlinksLength"] > 0){
+            $teamlinksFrom = $currentpage-$options["teamlinksLength"]/2;
+            if($teamlinksFrom < 1) $teamlinksFrom = 1;
+            $teamlinksTo = $currentpage+$options["teamlinksLength"]/2;
+            if($teamlinksTo > $totalpage) $teamlinksTo = $totalpage;
+            $pagination["teamlinks"] = [];
+            for($i=$teamlinksFrom;$i<=$teamlinksTo;$i++){
+                $pagination["teamlinks"][] = $i;
             }
         }
-        return $A25;
+        return $pagination;
     }
     public function getPDO(): \PDO{
-        $this->B7();
-        return $this->AB;
+        $this->readyTest();
+        return $this->pdo;
     }
 }

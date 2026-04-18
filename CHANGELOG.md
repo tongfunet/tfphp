@@ -104,6 +104,43 @@
 * [v0.6.7] Added the 'setOrders' method to the' tfdaoSngle 'class to set the sorting of query data.
 * [v0.6.7] Added the 'setOrders' method to the' tfdaoOneToOne 'class to set the sorting of query data.
 
+## [v0.6.8] - 2025/09/18
+
+* [v0.6.8] Refactored the 'query' method of the 'tfdo' object, replacing '^' before a table name with the table prefix, and '$' after a table name with the table suffix.
+
+## [v0.6.9] - 2025/11/26
+
+* [v0.6.9] Removed the special handling logic for requests to the '/tfphp/' path.
+* [v0.6.9] Added the 'getPluginsConfig' method to preload plugin classes and invoke the entry method.
+* [v0.6.9] Fixed logical errors in the 'getADataAll' and 'getBDataAll' methods of 'tfdaoManyToMany'.
+
 ## [v0.6.8] - 2025-03-06
 
 * [v0.6.8] Switch the project license from MIT to Apache License 2.0
+
+## [v0.7.0] - 2026/03/08
+
+* [v0.7.0] Redesigned the naming of all 'xxxSelect' methods of 'tfdaoSingle', redesigned the naming of all 'xxxUpdate' methods of 'tfdaoSingle', and redesigned the naming of all 'xxxDelete' methods of 'tfdaoSingle'. The mapping table is as follows:
+    - The 'constraintSelect' method is split into 'selectByPrimary', 'selectByUnique', 'selectByIndex', corresponding to primary key query, constraint query, and index query respectively;
+    - The 'keySelect' method is removed;
+    - The 'sqlWhereSelect' method is renamed to 'selectByWhere';
+    - The 'constraintSelectMany' method is split into 'selectManyByPrimary', 'selectManyByUnique', 'selectManyByIndex', corresponding to primary key query, constraint query, and index query respectively;
+    - The 'keySelectMany' method is removed;
+    - The 'sqlWhereSelectMany' method is renamed to 'selectManyByWhere';
+    - The 'constraintSelectAll' method is split into 'selectAllByPrimary', 'selectAllByUnique', 'selectAllByIndex', corresponding to primary key query, constraint query, and index query respectively;
+    - The 'keySelectAll' method is removed;
+    - The 'sqlWhereSelectAll' method is renamed to 'selectAllByWhere';
+    - The 'update' method swaps the positions of the 'params' and 'data' parameters;
+    - The 'constraintUpdate' method is split into 'updateByPrimary', 'updateByUnique', 'updateByIndex', corresponding to primary key update, constraint update, and index update respectively, and swaps the positions of the 'params' and 'data' parameters;
+    - The 'keyUpdate' method is removed;
+    - The 'constraintDelete' method is split into 'deleteByPrimary', 'deleteByUnique', 'deleteByIndex', corresponding to primary key delete, constraint delete, and index delete respectively;
+    - The 'keyDelete' method is removed;
+* [v0.7.0] Redesigned the naming of all 'xxxSelect' methods of 'tfdaoOneToOne', redesigned the naming of all 'xxxUpdate' methods of 'tfdaoOneToOne', and redesigned the naming of all 'xxxDelete' methods of 'tfdaoOneToOne'. The mapping table is as follows:
+    - The 'constraintSelect' method is split into 'selectByPrimary', 'selectByUnique', 'selectByIndex', corresponding to primary key query, constraint query, and index query respectively;
+    - The 'keySelect' method is removed;
+    - The 'sqlWhereSelect' method is renamed to 'selectByWhere';
+    - The 'update' method swaps the positions of the 'params' and 'data' parameters;
+    - The 'constraintUpdate' method is split into 'updateByPrimary', 'updateByUnique', 'updateByIndex', corresponding to primary key update, constraint update, and index update respectively, and swaps the positions of the 'params' and 'data' parameters;
+    - The 'keyUpdate' method is removed;
+    - The 'constraintDelete' method is split into 'deleteByPrimary', 'deleteByUnique', 'deleteByIndex', corresponding to primary key delete, constraint delete, and index delete respectively;
+    - The 'keyDelete' method is removed;
